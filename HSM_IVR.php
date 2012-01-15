@@ -81,7 +81,7 @@ function inquisitor($grievances, $request, $choices, $nextfunc) {
 
     ask("$request", array(
     "choices"     => $choices,
-    "timeout"     => 45.0,
+    "timeout"     => 20.0,
     "interdigitTimeout" => 20,
     "mode"	  => 'dtmf',
     "attempts"    => 4,
@@ -94,16 +94,26 @@ function inquisitor($grievances, $request, $choices, $nextfunc) {
 function sorry_message ($event) {
     global $survey_data;
     say("http://hosting.tropo.com/104666/www/sayahog/audio/0_2_End_Message_1_Thank_You.gsm");
-    _log("IVRS 0.3 - Caller at $currentCall->CallerId was unable to use the menu \:\(");
-    hangup();
+    _log("IVRS 0.3 - Caller at $currentCall->CallerId was unable to use the menu :(");
+    wait(10000); main();
 }
   
 // IVRS 1.1 - Please enter the 4 digit code of the health centre
 function select_healthcenter () {
     global $survey_data, $sites;
-    $hc_q = "http://hosting.tropo.com/104666/www/sayahog/audio/1_1_Enter_4_digit_code_number.gsm";
-    inquisitor(0, $hc_q, array_keys($sites), "verify_selection");
+    $sitekey = array_keys($sites); say("Site key contains many numbers, including $sitekey[0], $sitekey[1], $sitekey[20]");
+    wait(10000);
+    ask("http://hosting.tropo.com/104666/www/sayahog/audio/1_1_Enter_4_digit_code_number.gsm", array(
+    "choices" => $sitekey,
+    "timeout"     => 20.0,
+    "interdigitTimeout" => 20,
+    "mode"	  => "dtmf",
+    "attempts"    => 4,
+    "onChoice"	  => "verify_selection",
+    "onBadChoice" => "select_healthcenter")
+    );
 }
+    										      
 
 // IVRS 1.2 - Verify they selected the correct center
 function verify_selection ($event) {
