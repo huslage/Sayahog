@@ -101,14 +101,19 @@ function sorry_message ($event) {
 // IVRS 1.1 - Please enter the 4 digit code of the health centre
 function select_healthcenter () {
     global $survey_data, $sites;
-    $sitekey = array_keys($sites); say("Site key contains many numbers, including $sitekey[0], $sitekey[1], $sitekey[20]");
+    $sitekey = array_keys($sites);
+    _log($sitekey); _log(print_r($sitekey));
+    say("Checking Site map, please hold on..");
+    if (array_key_exists(0021,$sites)) { say("Found site 0021. " . print_r($sites[0021])); }
+    else { say("Could not find site 0021. I am so, so sorry. :(");
+    }
     wait(10000);
     ask("http://hosting.tropo.com/104666/www/sayahog/audio/1_1_Enter_4_digit_code_number.gsm", array(
-    "choices" => $sitekey,
-    "timeout"     => 20.0,
-    "interdigitTimeout" => 20,
+    "choices" => "[4 DIGITS]",
+    "timeout"     => 40.0,
+    "interdigitTimeout" => 8,
     "mode"	  => "dtmf",
-    "attempts"    => 4,
+    "attempts"    => 15,
     "onChoice"	  => "verify_selection",
     "onBadChoice" => "select_healthcenter")
     );
