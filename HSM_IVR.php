@@ -80,21 +80,21 @@ _log("Site map loaded!");
 function asky ($question, $options, $nextfunc) {    
     global $survey_data;
     _log("in asky with arguments $question, $options and $nextfunc");
-    ask($question, array(
+    ask("$question", array(
     "choices"     => $options,
     "timeout"     => 10.0,
     "mode"	  => "dtmf",
     "attempts"    => 3,
     "onChoice"	  => $nextfunc,
     "onBadChoice" => "sorry_message")
-    );
+    ); wait(3000);
 }
 
 // IVRS 0.3 - Try again later
 function sorry_message ($event) {
     global $survey_data;
     _log("in sorry_message with $event->value");
-    say("https://raw.github.com/tethr/Sayahog/master/audio/8bit-0_2_End_Message_1_Thank_You.wav");
+    say("http://hosting.tropo.com/104666/www/sayahog/audio/0_2_End_Message_1_Thank_You.gsm");
     _log("IVRS 0.3 - Caller at $currentCall->CallerId was unable to use the menu \:\(");
     hangup();
 }
@@ -103,7 +103,7 @@ function sorry_message ($event) {
 function select_healthcenter () {
     global $survey_data;
     _log("in select_healthcenter");
-    $healthcenter_question = ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-1_1_Enter_4_digit_code_number.wav");
+    $healthcenter_question = ("http://hosting.tropo.com/104666/www/sayahog/audio/1_1_Enter_4_digit_code_number.gsm");
     _log("RAW TEXT: $healthcenter_question");    
     asky ($healthcenter_question, array_keys($sites), "verify_selection");
 }
@@ -116,11 +116,11 @@ function verify_selection ($event) {
     // record the survey data. it'll be overwritten by the next run if they got it wrong.
     $survey_data['site'] = $sites[$site];
     $survey_data['site_number'] = $site;
-    $verify_site_selection  = ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-part_1__you_have_entered_the_code_xxxx.wav ");
-    $verify_site_selection .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-" . $site . "_Code.wav ");
-    $verify_site_selection .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-part_2__which_corresponds_to.wav ");
-    $verify_site_selection .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-" . $site . "_Name.wav "); 
-    $verify_site_selection .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2.wav");
+    $verify_site_selection  = ("http://hosting.tropo.com/104666/www/sayahog/audio/part_1__you_have_entered_the_code_xxxx.gsm ");
+    $verify_site_selection .= ("http://hosting.tropo.com/104666/www/sayahog/audio/" . $site . "_Code.gsm ");
+    $verify_site_selection .= ("http://hosting.tropo.com/104666/www/sayahog/audio/part_2__which_corresponds_to.gsm ");
+    $verify_site_selection .= ("http://hosting.tropo.com/104666/www/sayahog/audio/" . $site . "_Name.gsm "); 
+    $verify_site_selection .= ("http://hosting.tropo.com/104666/www/sayahog/audio/part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2.gsm");
     _log("RAW TEXT: $verify_site_selection");
     asky($verify_site_selection, "1,2", "select_incident_type");
 }
@@ -129,17 +129,17 @@ function verify_selection ($event) {
 function select_incident_type ($event) {
     global $survey_data;
     _log("in select_incident_type");
-    $incident_type_question  = ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-2_1_Listen_Carefully.wav ");
-    $incident_type_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-2_1_Press_0.wav ");
-    $incident_type_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-2_1_Press_1.wav ");
-    $incident_type_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-2_1_Press_2.wav ");
-    $incident_type_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-2_1_Press_3.wav ");
-    $incident_type_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-2_1_Press_4.wav ");
-    $incident_type_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-2_1_Press_5.wav ");
-    $incident_type_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-2_1_Press_6.wav ");
-    $incident_type_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-2_1_Press_7.wav ");
-    $incident_type_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-2_1_Press_8.wav ");
-    $incident_type_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-2_1_Press_9.wav");
+    $incident_type_question  = ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Listen_Carefully.gsm ");
+    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_0.gsm ");
+    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_1.gsm ");
+    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_2.gsm ");
+    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_3.gsm ");
+    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_4.gsm ");
+    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_5.gsm ");
+    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_6.gsm ");
+    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_7.gsm ");
+    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_8.gsm ");
+    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_9.gsm");
     $answers = range(0,9);
     _log("RAW TEXT: $incident_type_question");   
     asky($incident_type_question, $answers, 'incident_action');
@@ -166,9 +166,9 @@ function incident_action ($event) {
 function money_demanded () {
     global $survey_data;
     _log("in money_demanded");
-    $money_demand_question  = ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-3_1_a__if_spent_less_that_500_or_more_than_500.wav ");
-    $money_demand_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-Less_than_500.wav ");
-    $money_demand_question .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-More_than_500.wav");
+    $money_demand_question  = ("http://hosting.tropo.com/104666/www/sayahog/audio/3_1_a__if_spent_less_that_500_or_more_than_500.gsm ");
+    $money_demand_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/Less_than_500.gsm ");
+    $money_demand_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/More_than_500.gsm");
     $answers = range(1,2);
     _log("RAW TEXT: $money_demand_question");
     asky($money_demand_question, $answers, 'confirmation');
@@ -185,11 +185,11 @@ function confirmation($event) {
     } else { 
        $survey_data['money_demanded'] = 'Less_than_500';
     }
-    $confirmation_message  = ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-part_1_you.wav ");
-    $confirmation_message .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-" . $survey_data['site_number'] . "_Name.wav ");
-    $confirmation_message .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-part_2_name_of_hospital_details.wav ");
-    $confirmation_message .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-" . $survey_data['money_demanded'] . ".wav ");
-    $confirmation_message .= ("https://raw.github.com/tethr/Sayahog/master/audio/8bit-part_3_amount_money.wav");
+    $confirmation_message  = ("http://hosting.tropo.com/104666/www/sayahog/audio/part_1_you.gsm ");
+    $confirmation_message .= ("http://hosting.tropo.com/104666/www/sayahog/audio/" . $survey_data['site_number'] . "_Name.gsm ");
+    $confirmation_message .= ("http://hosting.tropo.com/104666/www/sayahog/audio/part_2_name_of_hospital_details.gsm ");
+    $confirmation_message .= ("http://hosting.tropo.com/104666/www/sayahog/audio/" . $survey_data['money_demanded'] . ".gsm ");
+    $confirmation_message .= ("http://hosting.tropo.com/104666/www/sayahog/audio/part_3_amount_money.gsm");
     _log("RAW TEXT: $confirmation_message");
     asky($confirmation_message, range(1,2), 'capture_or_reset');
 }
@@ -222,7 +222,7 @@ function capture_data () {
         
 
 function byenow () {
-    say("https://raw.github.com/tethr/Sayahog/master/audio/8bit-0_2_End_Message_1_Thank_You.wav");
+    say("http://hosting.tropo.com/104666/www/sayahog/audio/0_2_End_Message_1_Thank_You.gsm");
     hangup();
 }
 
@@ -235,14 +235,14 @@ function main () {
 
     _log("o hai we\'re in main");
     answer(); wait(3000);
-    say("https://raw.github.com/tethr/Sayahog/master/audio/8bit-0_1_Welcome_Message.wav"); wait(3000);
-    say("https://raw.github.com/tethr/Sayahog/master/audio/8bit-part_1_you.wav");
-    say("http://hosting.tropo.com/104666/www/sayahog/audio/0_1_Welcome_Message.wav");
-    say("http://hosting.tropo.com/104666/www/sayahog/audio/part_1_you.gsm");     
+    //say("http://hosting.tropo.com/104666/www/sayahog/audio/0_1_Welcome_Message.gsm"); wait(3000);
+    //say("http://hosting.tropo.com/104666/www/sayahog/audio/part_1_you.gsm");
+    say("http://hosting.tropo.com/104666/www/sayahog/audio/0_1_Welcome_Message.gsm"); wait(3000);
+//    say("http://hosting.tropo.com/104666/www/sayahog/audio/part_1_you.gsm");     
     _log(print_r($survey_data));
 
 
-//select_healthcenter(); // everything hooks into here via asky
+select_healthcenter(); // everything hooks into here via asky
 }
 // TODO: Refactor
 
