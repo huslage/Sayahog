@@ -109,13 +109,14 @@ function select_healthcenter () {
 }
 
 function check_code ($event) {
-    say("Checking 4 digit code.");
+    say("Checking 4 digit code $event->value");
     global $survey_data, $sites;
     $e = $event->value;
     if (array_key_exists($e,$sites)) {
-        say("Found site $e at $sites[$e]['site'] in district $sites[$e]['district']");
+        say("Found site $e!"); wait(1000);
+	verify_selection($event);
     } else {
-        say("Code $e not found. Try again?");
+        say("Code $e does not exist. Try again?");
 	select_healthcarecenter();
     }
 }
