@@ -117,7 +117,8 @@ function check_code ($event) {
 	verify_selection($event);
     } else {
         say("Code $e does not exist. Try again?");
-	select_healthcarecenter();
+	wait(1000);
+	main();
     }
 }
     				
