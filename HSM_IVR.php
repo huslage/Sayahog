@@ -80,7 +80,7 @@ function inquisitor($grievances, $request, $choices, $nextfunc) {
     "mode"	            => "dtmf",
     "bargein"               => $true,
     "attempts"              => 15,
-    "onChoice"	            => "nextfunc",
+    "onChoice"	            => $nextfunc,
     "onBadChoice"           => "check_code")
     );
 }
