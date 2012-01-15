@@ -71,17 +71,17 @@ $sites['0032'] = array('site'=>'Chil', 'location'=>'25.152229,82.563699', 'phone
 function inquisitor($grievances, $request, $choices, $nextfunc) {    
     global $survey_data;
     foreach ($grievances as $grievance) {
-        say($grievance); wait(P_DELAY);
+        say("$grievance"); wait(P_DELAY);
     }
 
     ask("$request", array(
-    "choices"     => $choices,
-    "timeout"     => 20.0,
-    "interdigitTimeout" => 20,
-    "mode"	  => 'dtmf',
-    "attempts"    => 4,
-    "onChoice"	  => "nextfunc",
-    "onBadChoice" => "sorry_message")
+    "choices"               => $choices,
+    "interdigitTimeout"     => 20,
+    "mode"	            => "dtmf",
+    "bargein"               => $true,
+    "attempts"              => 15,
+    "onChoice"	            => "nextfunc",
+    "onBadChoice"           => "check_code")
     );
 }
 
@@ -125,7 +125,7 @@ function check_code ($event) {
 
 					      
 
-// IVRS 1.2 - Verify they selected the correct center
+
 function verify_selection ($event) {
     global $survey_data, $sites;
     $site = $event->value;
