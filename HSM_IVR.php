@@ -230,7 +230,7 @@ function main () {
 
     _log("o hai we\'re in main");
     answer(); wait(3000);
-    say(AUDIO_BASEURL . "0_1_Welcome_Message.gsm"); wait(3000);
+    say("AUDIO_BASEURL" . "0_1_Welcome_Message.gsm"); wait(3000);
     select_healthcenter(); // everything hooks into here via asky
 }
 // TODO: Refactor
