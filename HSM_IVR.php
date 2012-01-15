@@ -243,7 +243,7 @@ function main () {
     // say("http://hosting.tropo.com/104666/www/sayahog/audio/0_1_Welcome_Message.gsm"); wait(600);
     // select_healthcenter(); // everything hooks into here via asky
     answer();
-    say("The Mera Swasthaya Meri Aawaz helpline will be activated soon. Please call again later.");
+    say("The Mera Swasthaya Meri Aawaz help line will be activated soon. Please call again later.", array("voice" => "milla"));
     hangup();
 }
 
