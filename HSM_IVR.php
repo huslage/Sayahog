@@ -109,14 +109,14 @@ function select_healthcenter () {
 }
 
 function check_code ($event) {
-    say("Checking 4 digit code $event->value");
+    //say("Checking 4 digit code $event->value");
     global $survey_data, $sites;
     $e = $event->value;
     if (array_key_exists($e,$sites)) {
-        say("Found site $e!"); wait(1000);
+        //say("Found site $e!"); wait(1000);
 	verify_selection($event);
     } else {
-        say("Code $e does not exist. Try again?");
+        //say("Code $e does not exist. Try again?");
 	wait(1000);
 	main();
     }
@@ -137,7 +137,7 @@ function verify_selection ($event) {
     $selected = "http://hosting.tropo.com/104666/www/sayahog/audio/part_2__which_corresponds_to.gsm";
     $selected = "http://hosting.tropo.com/104666/www/sayahog/audio/" . $site . "_Name.gsm"; 
     $request  = "http://hosting.tropo.com/104666/www/sayahog/audio/part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2.gsm";
-    inquisitor($selected, $request, '1,2', "select_incident_type");
+    inquisitor($selected, $request, "[1 DIGIT]", "select_incident_type");
 }
 
 // IVRS 2.1 - Type of incident
@@ -235,16 +235,19 @@ function byenow () {
 
 // IVR MAIN
 function main () {
-    global $survey_data;
-    $survey_data['caller_number'] = $currentCall->callerID;
-    $survey_data['network'] = $currentCall->network;
-    if ($currentCall->callerName) { $survey_data['callername'] = $currentCall->callerName; }
+    // global $survey_data;
+    // $survey_data['caller_number'] = $currentCall->callerID;
+    // $survey_data['network'] = $currentCall->network;
+    // if ($currentCall->callerName) { $survey_data['callername'] = $currentCall->callerName; }
+    // answer();
+    // say("http://hosting.tropo.com/104666/www/sayahog/audio/0_1_Welcome_Message.gsm"); wait(600);
+    // select_healthcenter(); // everything hooks into here via asky
     answer();
-    say("http://hosting.tropo.com/104666/www/sayahog/audio/0_1_Welcome_Message.gsm"); wait(600);
-    select_healthcenter(); // everything hooks into here via asky
+    say("The Mera Swasthaya Meri Aawaz helpline will be activated soon. Please call again later.");
+    hangup();
 }
 
 // let's get this party started
-main()
+main();
 
 ?>
