@@ -1,22 +1,13 @@
 <?php
 
-// debugging controls
-define("DEBUG_LEVEL","MORE_THAN_YOU_COULD_POSSIBLY_REQUIRE"); 
-
-_log("System Running. Call from " . $currentCall->callerID . "inbound.");
-
-// create a hash for the survey to live in during this call
-$survey_data = array();
 
 // geocode stuff
 define("MAPS_LOOKUP_BASE_URL", "http://maps.googleapis.com/maps/api/geocode/json");
 define("USHAHIDI_BASE_URL", "http://ec2-50-112-5-172.us-west-2.compute.amazonaws.com/admin");
 define("USHAHIDI_USER_NAME", "admin");
 define("USHAHIDI_PASSWORD", "admin");
+define("P_DELAY","100"); // prompt speed control
 
-// base URLs for our filez
-define("IVR_BASEURL", "https://raw.github.com/tethr/Sayahog/master/");
-// define("AUDIO_BASEURL", IVR_BASEURL . "audio/");
 
 // incident code -> description
 $incident_code = array();
@@ -30,6 +21,9 @@ $incident_code['7']['Had to pay for the vehicle that brought you to hospital.'];
 $incident_code['8']['Were asked to pay for or not provided with food during your stay in the JSSK hospitals.'];
 $incident_code['9']['Were not provided with free drop back facility from JSSK hospitals.'];
 $incident_code['0']['This is a situation which might result in death of the woman/child and no action is being taken by the staff.'];
+
+// create a hash for the survey to live in during this call
+$survey_data = array();
 
 // secret decoder ring for health facilities
 // site number (key): site, location, phone
@@ -76,24 +70,29 @@ $sites['0036'] = array('site'=>'Patehra', 'location'=>'24.553075,82.353919', 'ph
 _log("Site map loaded!");
 
 
+
+
 // helper function for the ask function
-function asky ($question, $options, $nextfunc) {    
+function inquisitor($grievances, $request, $choices, $nextfunc) {    
     global $survey_data;
-    _log("in asky with arguments $question, $options and $nextfunc");
-    ask("$question", array(
-    "choices"     => $options,
-    "timeout"     => 10.0,
-    "mode"	  => "dtmf",
-    "attempts"    => 3,
-    "onChoice"	  => $nextfunc,
+    foreach ($grievances as $grievance) {
+        say($grievance); wait(P_DELAY);
+    }
+
+    ask("$request", array(
+    "choices"     => $choices,
+    "timeout"     => 45.0,
+    "interdigitTimeout" => 20,
+    "mode"	  => 'dtmf',
+    "attempts"    => 4,
+    "onChoice"	  => "nextfunc",
     "onBadChoice" => "sorry_message")
-    ); wait(3000);
+    );
 }
 
 // IVRS 0.3 - Try again later
 function sorry_message ($event) {
     global $survey_data;
-    _log("in sorry_message with $event->value");
     say("http://hosting.tropo.com/104666/www/sayahog/audio/0_2_End_Message_1_Thank_You.gsm");
     _log("IVRS 0.3 - Caller at $currentCall->CallerId was unable to use the menu \:\(");
     hangup();
@@ -101,83 +100,71 @@ function sorry_message ($event) {
   
 // IVRS 1.1 - Please enter the 4 digit code of the health centre
 function select_healthcenter () {
-    global $survey_data;
-    _log("in select_healthcenter");
-    $healthcenter_question = ("http://hosting.tropo.com/104666/www/sayahog/audio/1_1_Enter_4_digit_code_number.gsm");
-    _log("RAW TEXT: $healthcenter_question");    
-    asky ($healthcenter_question, array_keys($sites), "verify_selection");
+    global $survey_data, $sites;
+    $hc_q = "http://hosting.tropo.com/104666/www/sayahog/audio/1_1_Enter_4_digit_code_number.gsm";
+    inquisitor(0, $hc_q, array_keys($sites), "verify_selection");
 }
 
 // IVRS 1.2 - Verify they selected the correct center
 function verify_selection ($event) {
-    global $survey_data;
-    _log("in verify_selection");
-    $site = $event->value; _log($site);
-    // record the survey data. it'll be overwritten by the next run if they got it wrong.
+    global $survey_data, $sites;
+    $site = $event->value;
     $survey_data['site'] = $sites[$site];
     $survey_data['site_number'] = $site;
-    $verify_site_selection  = ("http://hosting.tropo.com/104666/www/sayahog/audio/part_1__you_have_entered_the_code_xxxx.gsm ");
-    $verify_site_selection .= ("http://hosting.tropo.com/104666/www/sayahog/audio/" . $site . "_Code.gsm ");
-    $verify_site_selection .= ("http://hosting.tropo.com/104666/www/sayahog/audio/part_2__which_corresponds_to.gsm ");
-    $verify_site_selection .= ("http://hosting.tropo.com/104666/www/sayahog/audio/" . $site . "_Name.gsm "); 
-    $verify_site_selection .= ("http://hosting.tropo.com/104666/www/sayahog/audio/part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2.gsm");
-    _log("RAW TEXT: $verify_site_selection");
-    asky($verify_site_selection, "1,2", "select_incident_type");
+    $selected = array();
+    $selected = "http://hosting.tropo.com/104666/www/sayahog/audio/part_1__you_have_entered_the_code_xxxx.gsm";
+    $selected = "http://hosting.tropo.com/104666/www/sayahog/audio/" . $site . "_Code.gsm";
+    $selected = "http://hosting.tropo.com/104666/www/sayahog/audio/part_2__which_corresponds_to.gsm";
+    $selected = "http://hosting.tropo.com/104666/www/sayahog/audio/" . $site . "_Name.gsm"; 
+    $request  = "http://hosting.tropo.com/104666/www/sayahog/audio/part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2.gsm";
+    inquisitor($selected, $request, '1,2', "select_incident_type");
 }
 
 // IVRS 2.1 - Type of incident
 function select_incident_type ($event) {
     global $survey_data;
-    _log("in select_incident_type");
-    $incident_type_question  = ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Listen_Carefully.gsm ");
-    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_0.gsm ");
-    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_1.gsm ");
-    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_2.gsm ");
-    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_3.gsm ");
-    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_4.gsm ");
-    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_5.gsm ");
-    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_6.gsm ");
-    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_7.gsm ");
-    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_8.gsm ");
-    $incident_type_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_9.gsm");
+    $incidentq     = array();
+    $incidentq[1]  = "http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Listen_Carefully.gsm";
+    $incidentq[2]  = "http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_0.gsm";
+    $incidentq[3]  = "http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_1.gsm";
+    $incidentq[4]  = "http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_2.gsm";
+    $incidentq[5]  = "http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_3.gsm";
+    $incidentq[6]  = "http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_4.gsm";
+    $incidentq[7]  = "http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_5.gsm";
+    $incidentq[8]  = "http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_6.gsm";
+    $incidentq[9]  = "http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_7.gsm";
+    $incidentq[10] = "http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_8.gsm";
+    $request       = "http://hosting.tropo.com/104666/www/sayahog/audio/2_1_Press_9.gsm";
     $answers = range(0,9);
-    _log("RAW TEXT: $incident_type_question");   
-    asky($incident_type_question, $answers, 'incident_action');
+    inquisitor($incidentq, $request, $answers, 'incident_action');
 }
 
 // IVRS 2.1.i - Action
 function incident_action ($event) {
     global $survey_data, $incident_code;
-    _log("in incident_action");
-    // add the incident type to the survey results
     $incident_type = $event->value;
     $survey_data['incident_code'] = $incident_type;
     $survey_data['incident_description'] = $incident_code[$incident_type];
-    // if response is < 9 -> IVRS 3.1
-    // if response is 9 -> IVRS 1.4
+    //if ($incident_action == 0) { // break out and do the siren thing }
     if ($incident_action < 9 ) {
         money_demanded();
-    } else {
-        _log("somebody dialed a 9");
     }
 }
 
 // IVRS 3.1 - Money asked/spent
 function money_demanded () {
     global $survey_data;
-    _log("in money_demanded");
-    $money_demand_question  = ("http://hosting.tropo.com/104666/www/sayahog/audio/3_1_a__if_spent_less_that_500_or_more_than_500.gsm ");
-    $money_demand_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/Less_than_500.gsm ");
-    $money_demand_question .= ("http://hosting.tropo.com/104666/www/sayahog/audio/More_than_500.gsm");
-    $answers = range(1,2);
-    _log("RAW TEXT: $money_demand_question");
-    asky($money_demand_question, $answers, 'confirmation');
+    $moneyq = array();
+    $moneyq[1] = "http://hosting.tropo.com/104666/www/sayahog/audio/3_1_a__if_spent_less_that_500_or_more_than_500.gsm ";
+    $moneyq[2] = "http://hosting.tropo.com/104666/www/sayahog/audio/Less_than_500.gsm ";
+    $moneyq[3] = "http://hosting.tropo.com/104666/www/sayahog/audio/More_than_500.gsm";
+    $answers = '1,2';
+    inquisitor($messages, $request, $answers, 'confirmation');
 }
 
 // IVRS 1.3 - Summary for Confirmation
 function confirmation($event) {
     global $survey_data;
-    _log("in confirmation");
     $money_demanded = $event->value;
     $survey_data['money_code'] = $money_demanded;
     if ($money_demanded > 1) { 
@@ -185,13 +172,13 @@ function confirmation($event) {
     } else { 
        $survey_data['money_demanded'] = 'Less_than_500';
     }
-    $confirmation_message  = ("http://hosting.tropo.com/104666/www/sayahog/audio/part_1_you.gsm ");
-    $confirmation_message .= ("http://hosting.tropo.com/104666/www/sayahog/audio/" . $survey_data['site_number'] . "_Name.gsm ");
-    $confirmation_message .= ("http://hosting.tropo.com/104666/www/sayahog/audio/part_2_name_of_hospital_details.gsm ");
-    $confirmation_message .= ("http://hosting.tropo.com/104666/www/sayahog/audio/" . $survey_data['money_demanded'] . ".gsm ");
-    $confirmation_message .= ("http://hosting.tropo.com/104666/www/sayahog/audio/part_3_amount_money.gsm");
-    _log("RAW TEXT: $confirmation_message");
-    asky($confirmation_message, range(1,2), 'capture_or_reset');
+    $confmsg = array();
+    $confmsg[0] = "http://hosting.tropo.com/104666/www/sayahog/audio/part_1_you.gsm";
+    $confmsg[1] = "http://hosting.tropo.com/104666/www/sayahog/audio/" . $survey_data['site_number'] . "_Name.gsm";
+    $confmsg[2] = "http://hosting.tropo.com/104666/www/sayahog/audio/part_2_name_of_hospital_details.gsm";
+    $confmsg[3] = "http://hosting.tropo.com/104666/www/sayahog/audio/" . $survey_data['money_demanded'] . ".gsm";
+    $request = "http://hosting.tropo.com/104666/www/sayahog/audio/part_3_amount_money.gsm";
+    inquisitor($confmsg, $request, "1,2", 'capture_or_reset');
 }
 
 // U-turn folks who want another shot
@@ -202,22 +189,22 @@ function capture_or_reset ($event) {
         capture_data();
     }
     else if ($event == 2) { 
-        _log("going back around for another try!");
 	select_incident_type();
     }
 }
 
+
 // IVRS 1.4 Reporting an incident of corruption
 function report_incident ($event) {
     global $survey_data;
-    _log("in report_incident");
-    _log(print_r($survey_data));
+    // report the incident?
 }
 
 // hand data to ushahidi
 function capture_data () {
     global $survey_data;
-    _log(print_r($survey_data));
+    _log(json_encode($survey_data));
+    byenow();
 }
         
 
@@ -232,19 +219,10 @@ function main () {
     $survey_data['caller_number'] = $currentCall->callerID;
     $survey_data['network'] = $currentCall->network;
     if ($currentCall->callerName) { $survey_data['callername'] = $currentCall->callerName; }
-
-    _log("o hai we\'re in main");
-    answer(); wait(3000);
-    //say("http://hosting.tropo.com/104666/www/sayahog/audio/0_1_Welcome_Message.gsm"); wait(3000);
-    //say("http://hosting.tropo.com/104666/www/sayahog/audio/part_1_you.gsm");
-    say("http://hosting.tropo.com/104666/www/sayahog/audio/0_1_Welcome_Message.gsm"); wait(3000);
-//    say("http://hosting.tropo.com/104666/www/sayahog/audio/part_1_you.gsm");     
-    _log(print_r($survey_data));
-
-
-select_healthcenter(); // everything hooks into here via asky
+    answer();
+    say("http://hosting.tropo.com/104666/www/sayahog/audio/0_1_Welcome_Message.gsm"); wait(600);
+    select_healthcenter(); // everything hooks into here via asky
 }
-// TODO: Refactor
 
 // let's get this party started
 main()
