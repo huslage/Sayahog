@@ -236,7 +236,13 @@ function main () {
     _log("o hai we\'re in main");
     answer(); wait(3000);
     say("https://raw.github.com/tethr/Sayahog/master/audio/8bit-0_1_Welcome_Message.wav"); wait(3000);
-    select_healthcenter(); // everything hooks into here via asky
+    say("https://raw.github.com/tethr/Sayahog/master/audio/8bit-part_1_you.wav");
+    say("http://hosting.tropo.com/104666/www/sayahog/audio/0_1_Welcome_Message.wav");
+    say("http://hosting.tropo.com/104666/www/sayahog/audio/part_1_you.gsm");     
+    _log(print_r($survey_data));
+
+
+//select_healthcenter(); // everything hooks into here via asky
 }
 // TODO: Refactor
 
