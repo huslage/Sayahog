@@ -62,12 +62,7 @@ $sites['0029'] = array('site'=>'Haliya', 'location'=>'24.491444,82.185563', 'pho
 $sites['0030'] = array('site'=>'Vijaypur', 'location'=>'25.073399,82.378023', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District');
 $sites['0031'] = array('site'=>'Jamalpur', 'location'=>'25.09245,83.052788', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District');
 $sites['0032'] = array('site'=>'Chil', 'location'=>'25.152229,82.563699', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District');
-$sites['0033'] = array('site'=>'Kon', 'location'=>'25.214376,82.583189', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District');
-$sites['0034'] = array('site'=>'Pahadi', 'location'=>'25.050047,82.450017', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District');
-$sites['0035'] = array('site'=>'Nagar (Gurusandi)', 'location'=>'25.160245,82.589738', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District');
-$sites['0036'] = array('site'=>'Patehra', 'location'=>'24.553075,82.353919', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District');
-// end of decoder ring
-_log("Site map loaded!");
+
 
 
 
@@ -101,24 +96,32 @@ function sorry_message ($event) {
 // IVRS 1.1 - Please enter the 4 digit code of the health centre
 function select_healthcenter () {
     global $survey_data, $sites;
-    $sitekey = array_keys($sites);
-    _log($sitekey); _log(print_r($sitekey));
-    say("Checking Site map, please hold on..");
-    if (array_key_exists(0021,$sites)) { say("Found site 0021. " . print_r($sites[0021])); }
-    else { say("Could not find site 0021. I am so, so sorry. :(");
-    }
-    wait(10000);
     ask("http://hosting.tropo.com/104666/www/sayahog/audio/1_1_Enter_4_digit_code_number.gsm", array(
-    "choices" => "[4 DIGITS]",
-    "timeout"     => 40.0,
-    "interdigitTimeout" => 8,
-    "mode"	  => "dtmf",
-    "attempts"    => 15,
-    "onChoice"	  => "verify_selection",
-    "onBadChoice" => "select_healthcenter")
+    "choices"               => "[4 DIGITS]",
+    "timeout"               => 45,
+    "interdigitTimeout"     => 20,
+    "mode"	            => "dtmf",
+    "bargein"               => $true,
+    "attempts"              => 15,
+    "onChoice"	            => "check_code",
+    "onBadChoice"           => "check_code")
     );
 }
-    										      
+
+function check_code ($event) {
+    say("Checking 4 digit code.");
+    global $survey_data, $sites;
+    $e = $event->value;
+    if (array_key_exists($e,$sites)) {
+        say("Found site $e at $sites[$e]['site'] in district $sites[$e]['district']");
+    } else {
+        say("Code $e not found. Try again?");
+	select_healthcarecenter();
+    }
+}
+    				
+
+					      
 
 // IVRS 1.2 - Verify they selected the correct center
 function verify_selection ($event) {
