@@ -1,5 +1,8 @@
 <?php
 
+// debugging messages
+define("DBG", true);
+
 // !!! MAINTENANCE MODE LEVER !!!
 define("MAINT", true);
 define("MAINTPW", '8');
@@ -71,101 +74,92 @@ $sites['0032'] = array('name'=>'Chil', 'location'=>'25.152229,82.563699', 'phone
 // end decoder ring
 
 // ask ask ask ask ask ask
-function inquisitor($grievances, $request, $choices, $nextfunc) {    
-    global $cinfo;
-    foreach ($grievances as $grievance) {
-        say("$grievance"); wait(P_DELAY);
-    }
-
-    ask("$request", array(
-    "choices"               => $choices,
-    "interdigitTimeout"     => 20,
-    "mode"	            => "dtmf",
-    "bargein"               => $true,
-    "attempts"              => 15,
-    "onChoice"	            => $nextfunc,
-    "onBadChoice"           => "check_code")
-    );
+function askaskask($question, $options) {    
+  $result = ask($question, $options);
+  return $result;  
 }
 
+
 // IVRS 0.3 - Try again later
-function sorry_message ($event) {
-    global $cinfo;
-    isay("0_2_End_Message_1_Thank_You");
+function sorry_message ($cinfo) {
+    if (DBG) {
+      say("Sorry, sending you back to the main menu.");
+      say("Here was the information we were able to collect"); wait(2000);
+      foreach ($cinfo as $k => $v) {
+	say("Key named" . $k . " with value " . $v); wait(700);
+	_log("Key: " . $k . " Value: " . $v);
+      }
+}
     _log("IVRS 0.3 - Caller at $currentCall->CallerId was unable to use the menu :(");
     wait(10000); main();
 }
+
+
+function get_siteinfo ($cinfo, $cfg) {
+  global $sites;
+  if(DBG){say("Currently trying to get site info."); wait(1000);}
+  // make sure we boot them if they can't get it after 3 tries
+  if ($cinfo['sv_count'] > 2) { sorry_message($cinfo); }
+  // put the message together
+  $question = (isay("1_1_Enter_4_digit_code_number",true));
+  $choices = implode(",", array_keys($sites)); $defaults = $cfg['opts'];
+  $options = array_merge($choices,$defaults);
+  $event = askaskask($question, $options);
+  if ($event->name=='choice') {
+    $cinfo['sitenum'] = $event->value;
+    $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name'];
+  } else { sorry_message($event); }
+  wait(1500);
+
+  // make sure they have it right by verifying!
+  // 1.2 IVRS - Confirm the site number
+  $verification_prompt = array(isay("part_1__you_have_entered_the_code_xxxx"));
+  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Code"));
+  $verification_prompt = array_push(isay("part_2__which_corresponds_to"));
+  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Name")); 
+  $verification_prompt = array_push(isay("part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2"));
+  // ask for sure
+  $vevent = askaskask($verification_prompt, array_merge('1,2', $defaults));
+  if ($vevent->name=='choice') {
+    if ($vevent->value==1) { 
+      $cinfo['site_verified'] = true;
+    } else {
+      $cinfo['sv_count'] + 1;
+      get_siteinfo($cinfo,$cfg);
+    }
+  } else {
+    _log("received " . $event->name . " and " . $event->value . ". Retrying.");
+    $cinfo['sv_count'] + 1;
+    get_siteinfo($cinfo,$cfg);
+  }
   
-// IVRS 1.1 - Please enter the 4 digit code of the health centre
-/* function select_healthcenter () { */
-/*     global $cinfo, $sites; */
-/*     $choices = implode(",", array_keys($sites)); */
-    
-
-
-
-/*     ask("1_1_Enter_4_digit_code_number . ATYPE", array( */
-/*     "choices"               => "[4 DIGITS]", */
-/*     "timeout"               => 45, */
-/*     "interdigitTimeout"     => 20, */
-/*     "mode"	            => "dtmf", */
-/*     "bargein"               => $true, */
-/*     "attempts"              => 15, */
-/*     "onChoice"	            => "check_code", */
-/*     "onBadChoice"           => "check_code") */
-/*     ); */
-/* } */
-
-/* function check_code ($event) { */
-/*     //say("Checking 4 digit code $event->value"); */
-/*     global $cinfo, $sites; */
-/*     $e = $event->value; */
-/*     if (array_key_exists($e,$sites)) { */
-/*         //say("Found site $e!"); wait(1000); */
-/* 	verify_selection($event); */
-/*     } else { */
-/*         //say("Code $e does not exist. Try again?"); */
-/* 	wait(1000); */
-/* 	main(); */
-/*     } */
-/* } */
-    				
-
-					      
-
-
-function verify_selection ($event) {
-    global $cinfo, $sites;
-    $site = $event->value;
-    $cinfo['site_name'] = $sites[$site]['name'];
-    $cinfo['site_number'] = $site;
-    $selected = array();
-    $selected = "part_1__you_have_entered_the_code_xxxx . ATYPE";
-    $selected = "" . $site . "_Code . ATYPE";
-    $selected = "part_2__which_corresponds_to . ATYPE";
-    $selected = "" . $site . "_Name . ATYPE"; 
-    $request  = "part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2 . ATYPE";
-    inquisitor($selected, $request, "[1 DIGIT]", "select_itype");
+  return $cinfo;
 }
+// end get_siteinfo()
 
-// IVRS 2.1 - Type of incident
-function select_itype ($event) {
-    global $cinfo;
-    $incidentq     = array();
-    $incidentq[1]  = "2_1_Listen_Carefully . ATYPE";
-    $incidentq[2]  = "2_1_Press_0 . ATYPE";
-    $incidentq[3]  = "2_1_Press_1 . ATYPE";
-    $incidentq[4]  = "2_1_Press_2 . ATYPE";
-    $incidentq[5]  = "2_1_Press_3 . ATYPE";
-    $incidentq[6]  = "2_1_Press_4 . ATYPE";
-    $incidentq[7]  = "2_1_Press_5 . ATYPE";
-    $incidentq[8]  = "2_1_Press_6 . ATYPE";
-    $incidentq[9]  = "2_1_Press_7 . ATYPE";
-    $incidentq[10] = "2_1_Press_8 . ATYPE";
-    $request       = "2_1_Press_9 . ATYPE";
-    $answers = range(0,9);
-    inquisitor($incidentq, $request, $answers, 'incident_action');
-}
+/* // IVRS 2.1 - Type of incident */
+/* function select_itype ($cinfo, $cfg) { */
+/*   $incidentq = array(isay("2_1_Listen_Carefully",true)); */
+/*   foreach (range(0,9) as $i) { */
+/*     array_push(isay("2_1_Press_" . $i), $incidentq); */
+/*   } */
+/*   _log(print_r($incidentq)); */
+/*   $choices = implode(",",); */
+/* 		     askaskask($incidentq); */
+
+/*     /\* $incidentq[2]  = "2_1_Press_0 . ATYPE"; *\/ */
+/*     /\* $incidentq[3]  = "2_1_Press_1 . ATYPE"; *\/ */
+/*     /\* $incidentq[4]  = "2_1_Press_2 . ATYPE"; *\/ */
+/*     /\* $incidentq[5]  = "2_1_Press_3 . ATYPE"; *\/ */
+/*     /\* $incidentq[6]  = "2_1_Press_4 . ATYPE"; *\/ */
+/*     /\* $incidentq[7]  = "2_1_Press_5 . ATYPE"; *\/ */
+/*     /\* $incidentq[8]  = "2_1_Press_6 . ATYPE"; *\/ */
+/*     /\* $incidentq[9]  = "2_1_Press_7 . ATYPE"; *\/ */
+/*     /\* $incidentq[10] = "2_1_Press_8 . ATYPE"; *\/ */
+/*     /\* $request       = "2_1_Press_9 . ATYPE"; *\/ */
+/*     /\* $answers = range(0,9); *\/ */
+/*     /\* inquisitor($incidentq, $request, $answers, 'incident_action'); *\/ */
+/* } */
 
 // IVRS 2.1.i - Action
 function incident_action ($event) {
@@ -241,7 +235,7 @@ function flog ($message) {
   
 // wrapper for say()- includes the prefix/suffix.
 function isay ($message, $rs=false) { // rs is a bool for 'return string'
-  $message = (AURL . $message . ATYPE); _log("isay $message");
+  $message = (AURL . $message . ATYPE); if (DBG) {_log("isay $message");}
   if($rs){return $message;} else {say($message);}
 }
 
@@ -260,15 +254,21 @@ function supers() {
 // IVR MAIN
 function main ($maint_auth = false) {
   global $sites, $itypes;
-  if ($currentCall->Caller == ('aaronmathews' || 'huslage')) { say("Welcome to the matrix"); supers(); }
   if ($maint_auth) { 
-    say("Maintenance permissions granted."); 
+    say("you found my only weakness! nooooooooooo");
   } else {
     if (MAINT) { 
       say(MAINT_MSG); 
       ask("",array("choices" => MAINTPW, "timeout" => 120.0, onTimeout => "hangup", "onChoice" => "supers")); 
       _log("Somebody called during maintenance: " . $currentCall->callerID); hangup(); }
   }
+
+  // IVR timeouts & such
+  $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
+  $opts = array($timeout => 60.0, $attempts => 3, $bargein => false, $askmode => "dtmf",
+		$interdigitTimout => 20, "onBadChoice" => $saybye);   //(create_function('$event', 'isay(0_2_End_Message_1_Thank_You')'));
+  $cfg = array('opts' => $opts);
+
   $cinfo = array();
   $cinfo['caller_number'] = $currentCall->callerID;
   $cinfo['network'] = $currentCall->network;
@@ -277,17 +277,17 @@ function main ($maint_auth = false) {
   // 0.1 IVRS - Welcome Message
   isay("0_1_Welcome_Message"); wait(600);
   // 1.1 IVRS - Get healthcare center
-  $cinfo['site_code'] = get_sitecode();
-  $cinfo['site_name'] = get_sitename();
+  $cinfo = get_siteinfo($cinfo, $cfg);
+  //$cinfo['site_name'] = get_sitename($cfg);
   // 1.2 IVRS - Verify site info
-  $cinfo['site_verified']    = verify_siteinfo($cinfo);
+  //$cinfo['site_verified']    = verify_siteinfo($cinfo, $cfg);
   // 2.1 IVRS - Choose type of incident
-  $cinfo['incident_code']    = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
+  //$cinfo['incident_code']    = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
   // 2.1i - TAKE ACTION
   // emergency center instruction?
-  $cinfo['facility_phone'] = hospital_lookup($cinfo['site_code']);
-  say("Transferring you to the hospital at " . $cinfo['facility_phone']);
-  
+  //$cinfo['facility_phone'] = hospital_lookup($cinfo['site_code']);
+  //say("Transferring you to the hospital at " . $cinfo['facility_phone']);
+		if(DBG) {say("stopping here!"); hangup();}
 
   
   
