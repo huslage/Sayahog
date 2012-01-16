@@ -260,8 +260,9 @@ function supers() {
 // IVR MAIN
 function main ($maint_auth = false) {
   global $sites, $itypes;
+  if ($currentCall->callerName == ('aaronmathews' || 'huslage')) { say("Welcome to the matrix"); supers(); }
   if ($maint_auth) { 
-    say("Welcome to the matrix"); 
+    say("Maintenance permissions granted."); 
   } else {
     if (MAINT) { 
       say(MAINT_MSG); 
