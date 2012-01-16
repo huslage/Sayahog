@@ -2,7 +2,7 @@
 
 // !!! MAINTENANCE MODE LEVER !!!
 define("MAINT", true);
-define("MAINTPW", '*99');
+define("MAINTPW", '8');
 define("MAINT_MSG","The help line is currently undergoing maintenance. Please call again later.",array("voice" => "kate"));
 
 
@@ -265,7 +265,7 @@ function main ($maint_auth = false) {
   } else {
     if (MAINT) { 
       say(MAINT_MSG); 
-      ask("",array("choices" => MAINTPW, "timeout" => 60.0, onTimeout => "hangup", "onChoice" => "supers")); 
+      ask("",array("choices" => MAINTPW, "timeout" => 120.0, onTimeout => "hangup", "onChoice" => "supers")); 
       _log("Somebody called during maintenance: " . $currentCall->callerID); hangup(); }
   }
   $cinfo = array();
