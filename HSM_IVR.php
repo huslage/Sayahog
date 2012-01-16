@@ -103,9 +103,17 @@ function get_siteinfo ($cinfo, $cfg) {
   if ($cinfo['sv_count'] > 2) { sorry_message($cinfo); }
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number",true));
-  $choices = implode(",", array_keys($sites)); $defaults = $cfg['opts'];
+  //$choices = implode(",", array_keys($sites)); 
+  // HACKHACK
+  $choices = "";
+  foreach (array_keys($sites) as $key) { 
+  $choices .= "'$key',"; 
+  } 
+  $choices = trim($choices, ',');
+  $defaults = $cfg['opts'];
   $options = array_merge($choices,$defaults);
-  _log("The choices - " . $choices); _log(print_r($options));
+  _log("The choices - " . $choices);
+  _log("options - " . $options);
   $event = askaskask($question, $options); wait(3000);
   _log("Event Name " . $event->name); _log(" Value " . $event->value);
   if ($event->value) {
@@ -138,6 +146,7 @@ function get_siteinfo ($cinfo, $cfg) {
   
   return $cinfo;
 }
+
 // end get_siteinfo()
 
 /* // IVRS 2.1 - Type of incident */
