@@ -105,11 +105,13 @@ function get_siteinfo ($cinfo, $cfg) {
   $question = (isay("1_1_Enter_4_digit_code_number",true));
   //$choices = implode(",", array_keys($sites)); 
   // HACKHACK
+
   $choices = "";
   foreach (array_keys($sites) as $key) { 
-  $choices .= "'$key',"; 
-  } 
+  $choices .= "\'$key\',"; } 
   $choices = trim($choices, ',');
+  _log("numbros: - " . $choices);
+
   $defaults = $cfg['opts'];
   $options = array_merge($choices,$defaults);
   _log("The choices - " . $choices);
