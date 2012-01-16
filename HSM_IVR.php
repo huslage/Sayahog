@@ -104,7 +104,9 @@ function get_siteinfo ($cinfo, $cfg) {
   $question = (isay("1_1_Enter_4_digit_code_number",true));
   $choices = implode(",", array_keys($sites)); $defaults = $cfg['opts'];
   $options = array_merge($choices,$defaults);
+  _log(print_r($question)); _log(print_r($options));
   $event = askaskask($question, $options);
+  say("Event Name " . $event->name . " Value " . $event->value);
   if ($event->name=='choice') {
     $cinfo['sitenum'] = $event->value;
     $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name'];
