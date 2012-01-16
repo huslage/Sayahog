@@ -2,6 +2,7 @@
 
 // !!! MAINTENANCE MODE LEVER !!!
 define("MAINT", true);
+define("MAINTPW", '*99');
 define("MAINT_MSG","The help line is currently undergoing maintenance. Please call again later.",array("voice" => "kate"));
 
 
