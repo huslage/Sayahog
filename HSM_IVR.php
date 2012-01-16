@@ -103,20 +103,20 @@ function get_siteinfo ($cinfo, $cfg) {
   if ($cinfo['sv_count'] > 2) { sorry_message($cinfo); }
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number",true));
-  //$choices = implode(",", array_keys($sites)); 
-  // HACKHACK
-
-  $choices = "";
-  foreach (array_keys($sites) as $key) { 
-  $choices .= "\'$key\',"; } 
-  $choices = trim($choices, ',');
-  _log("numbros: - " . $choices);
-
+  $choices = '[4-DIGITS]';
   $defaults = $cfg['opts'];
   $options = array_merge($choices,$defaults);
   _log("The choices - " . $choices);
   _log("options - " . $options);
-  $event = askaskask($question, $options); wait(3000);
+  _log("gettin' us a 4 digit code");
+  $event = ask($question, $options); wait(2000);
+  $e = $event->value;
+  if (array_key_exists($e,$sites)) {
+    _log("Found site $e!");
+    } else {
+    ++$cinfo['sv_count'];
+    get_siteinfo($cinfo, $cfg);
+   }
   _log("Event Name " . $event->name); _log(" Value " . $event->value);
   if ($event->value) {
     $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
@@ -279,12 +279,13 @@ function main ($maint_auth = false) {
 
   // IVR timeouts & such
   $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
-  $opts = array($timeout => 60.0, $attempts => 3, $bargein => false, $askmode => "dtmf",
-		$interdigitTimout => 20, "onBadChoice" => $saybye);   //(create_function('$event', 'isay(0_2_End_Message_1_Thank_You')'));
+  $opts = array($timeout => 120.0, $attempts => 3, $bargein => false, $askmode => "dtmf",
+		$interdigitTimout => 30, "onBadChoice" => $saybye);   //(create_function('$event', 'isay(0_2_End_Message_1_Thank_You')'));
   $cfg = array('opts' => $opts);
 
   $cinfo = array();
   $cinfo['caller_number'] = $currentCall->callerID;
+  _log("Caller: " . $cinfo['caller_number']);
   $cinfo['network'] = $currentCall->network;
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
   answer();
