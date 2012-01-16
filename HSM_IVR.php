@@ -264,8 +264,8 @@ function main ($maint_auth = false) {
     say("Welcome to the matrix"); 
   } else {
     if (MAINT) { 
-      say(MAINT_MESSAGE); 
-      ask("",array("choices" => MAINTPW, "timeout" => 20.0, onTimeout => "hangup", "onChoice" => "supers")); 
+      say(MAINT_MSG); 
+      ask("",array("choices" => MAINTPW, "timeout" => 60.0, onTimeout => "hangup", "onChoice" => "supers")); 
       _log("Somebody called during maintenance: " . $currentCall->callerID); hangup(); }
   }
   $cinfo = array();
