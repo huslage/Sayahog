@@ -105,16 +105,21 @@ function get_siteinfo ($cinfo, $cfg) {
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number",true));
   $choices = "[4-DIGITS]";
-  $defaults = $cfg['opts'];
-  $options = array_merge($choices,$defaults);
+  //$defaults = $cfg['opts'];
+  //$options = array_merge($choices,$defaults);
   _log("The choices - " . $choices);
   print_r($options);
-  $event = ask($question, $options); wait(300);
+  $event = ask($question, array("choices" => $choices,
+				"interdigitTimeout" => 20,
+				"bargein"           => true,
+				"attempts"          => 3,
+				"timeout"           => 30.0));
+  wait(300);
   $e = $event->value;
   if (array_key_exists($e,$sites)) {
     _log("Found site " . $e);
     } else {
-    ++$cinfo['sv_count'];
+    $cinfo['sv_count']++;
     _log("didn't find site: " . $e);
     get_siteinfo($cinfo, $cfg);
    }
@@ -133,10 +138,14 @@ function get_siteinfo ($cinfo, $cfg) {
   $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Name")); 
   $verification_prompt = array_push(isay("part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2"));
   // ask for sure
-  $vevent = askaskask($verification_prompt, array_merge('1,2', $defaults));
+  $vevent = askaskask($verification_prompt, array("choices" => '1,2', 
+						  "interdigitTimeout" => 20,
+						  "bargein"           => true,
+						  "attempts"          => 3,
+						  "timeout"           => 30.0));
   if ($vevent->name=='choice') {
     if ($vevent->value==1) { 
-      $cinfo['site_verified'] = true;
+      $cinfo['site_verified'] = true; say("site verified!");
     } else {
       $cinfo['sv_count'] + 1;
       get_siteinfo($cinfo,$cfg);
@@ -282,7 +291,7 @@ function main ($maint_auth = false) {
   // IVR timeouts & such
   $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
   $opts = array($timeout => 30.0, $attempts => 3, "bargein" => true, "mode" => "dtmf",
-		$interdigitTimout => 8, "onBadChoice" => $saybye, "onChoice" => "return");   //(create_function('$event', 'isay(0_2_End_Message_1_Thank_You')'));
+		$interdigitTimout => 8); 
   $cfg = array('opts' => $opts);
 
   $cinfo = array();
@@ -298,7 +307,7 @@ function main ($maint_auth = false) {
   // 1.2 IVRS - Verify site info
   //$cinfo['site_verified']    = verify_siteinfo($cinfo, $cfg);
   // 2.1 IVRS - Choose type of incident
-  //$cinfo['incident_code']    = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
+  $cinfo['incident_code']    = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
   // 2.1i - TAKE ACTION
   // emergency center instruction?
   //$cinfo['facility_phone'] = hospital_lookup($cinfo['site_code']);
