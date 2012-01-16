@@ -75,7 +75,7 @@ $sites['0032'] = array('name'=>'Chil', 'location'=>'25.152229,82.563699', 'phone
 
 // ask ask ask ask ask ask
 function askaskask($question, $options) {    
-  $result = ask($question, $options); wait(10000);
+  $result = ask($question, $options); wait(300);
   return $result;  
 }
 
@@ -83,22 +83,23 @@ function askaskask($question, $options) {
 // IVRS 0.3 - Try again later
 function sorry_message ($cinfo, $event) {
     if (DBG) {
+      say("sorry! you're currently in the sorry message. it's a maze of twisty passages all alike.");
       _log("We're in sorry_message, so something has gone horribly wrong!");
       //      say("Sorry, sending you back to the main menu.");
       // say("Here was the information we were able to collect"); wait(2000);
       foreach ($cinfo as $k => $v) {
-	_log("Key named" . $k . " with value " . $v); wait(700);
-	//	_log("Key: " . $k . " Value: " . $v);
+	_log("Key named" . $k . " with value " . $v);
       }
 }
     _log("IVRS 0.3 - Caller at " . $currentCall->CallerId . " was unable to use the menu :(");
-    wait(10000); main();
+    say("ok, sending you back to the main menu!"); 
+    wait(300); main();
 }
 
 
 function get_siteinfo ($cinfo, $cfg) {
   global $sites;
-  if(DBG){_log("Currently trying to get site info."); wait(1000);}
+  if(DBG){_log("Currently trying to get site info.");}
   // make sure we boot them if they can't get it after 3 tries
   if ($cinfo['sv_count'] > 2) { sorry_message($cinfo); }
   // put the message together
@@ -107,14 +108,14 @@ function get_siteinfo ($cinfo, $cfg) {
   $defaults = $cfg['opts'];
   $options = array_merge($choices,$defaults);
   _log("The choices - " . $choices);
-  _log("options - " . $options);
-  _log("gettin' us a 4 digit code");
-  $event = ask($question, $options); wait(2000);
+  print_r($options);
+  $event = ask($question, $options); wait(300);
   $e = $event->value;
   if (array_key_exists($e,$sites)) {
-    _log("Found site $e!");
+    _log("Found site " . $e);
     } else {
     ++$cinfo['sv_count'];
+    _log("didn't find site: " . $e);
     get_siteinfo($cinfo, $cfg);
    }
   _log("Event Name " . $event->name); _log(" Value " . $event->value);
@@ -122,7 +123,7 @@ function get_siteinfo ($cinfo, $cfg) {
     $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
     $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name']; _log("sitename: " . $cinfo['sitename']);
   } else { sorry_message($cinfo, $event); }
-  wait(1500);
+  wait(300);
 
   // make sure they have it right by verifying!
   // 1.2 IVRS - Confirm the site number
@@ -269,7 +270,7 @@ function supers() {
 function main ($maint_auth = false) {
   global $sites, $itypes;
   if ($maint_auth) { 
-    say("you found my only weakness! nooooooooooo");
+    say("stop using hacker tricks on me, hu-man!");
   } else {
     if (MAINT) { 
       say(MAINT_MSG); 
@@ -279,8 +280,8 @@ function main ($maint_auth = false) {
 
   // IVR timeouts & such
   $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
-  $opts = array($timeout => 120.0, $attempts => 3, $bargein => false, $askmode => "dtmf",
-		$interdigitTimout => 30, "onBadChoice" => $saybye);   //(create_function('$event', 'isay(0_2_End_Message_1_Thank_You')'));
+  $opts = array($timeout => 30.0, $attempts => 3, $bargein => false, $askmode => "dtmf",
+		$interdigitTimout => 8, "onBadChoice" => $saybye);   //(create_function('$event', 'isay(0_2_End_Message_1_Thank_You')'));
   $cfg = array('opts' => $opts);
 
   $cinfo = array();
@@ -290,7 +291,7 @@ function main ($maint_auth = false) {
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
   answer();
   // 0.1 IVRS - Welcome Message
-  isay("0_1_Welcome_Message"); wait(600);
+  isay("0_1_Welcome_Message"); wait(100);
   // 1.1 IVRS - Get healthcare center
   $cinfo = get_siteinfo($cinfo, $cfg);
   //$cinfo['site_name'] = get_sitename($cfg);
