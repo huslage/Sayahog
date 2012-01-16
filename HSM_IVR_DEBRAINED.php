@@ -66,8 +66,6 @@ $sites['0030'] = array('site'=>'Vijaypur', 'location'=>'25.073399,82.378023', 'p
 $sites['0031'] = array('site'=>'Jamalpur', 'location'=>'25.09245,83.052788', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District');
 $sites['0032'] = array('site'=>'Chil', 'location'=>'25.152229,82.563699', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District');
 
-// basic ask settings
-$timeout = 60.0; $attempts = 3; $bargein = false; $askmode = "dtmf";
 
 function ivr_run () {
 // check if we're in maint mode, then get started.
@@ -95,8 +93,7 @@ say("http://hosting.tropo.com/104666/www/sayahog/audio/0_1_Welcome_Message.gsm")
 // IVRS 1.1 - Please enter the 4 digit code of the health centre
 $check_hc = create_function('$a','return (array_key_exists($a,$sites) ? $a : false'); 
 ask("http://hosting.tropo.com/104666/www/sayahog/audio/1_1_Enter_4_digit_code_number.gsm",
-    array("choices" => $check_hc,
-	  $options)
+    array("choices" => $check_hc, $options)
 }
 
 // get data from the caller.
