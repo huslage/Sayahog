@@ -83,7 +83,7 @@ function askaskask($question, $options) {
 // IVRS 0.3 - Try again later
 function sorry_message ($cinfo, $event) {
     if (DBG) {
-      say("sorry! you're currently in the sorry message. it's a maze of twisty passages all alike.");
+      say("sorry! sending you back to the main menu.");
       _log("We're in sorry_message, so something has gone horribly wrong!");
       //      say("Sorry, sending you back to the main menu.");
       // say("Here was the information we were able to collect"); wait(2000);
@@ -268,6 +268,7 @@ function supers() {
 
 // IVR MAIN
 function main ($maint_auth = false) {
+  answer();
   global $sites, $itypes;
   if ($maint_auth) { 
     say("stop using hacker tricks on me, hu-man!");
@@ -280,8 +281,8 @@ function main ($maint_auth = false) {
 
   // IVR timeouts & such
   $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
-  $opts = array($timeout => 30.0, $attempts => 3, $bargein => false, $askmode => "dtmf",
-		$interdigitTimout => 8, "onBadChoice" => $saybye);   //(create_function('$event', 'isay(0_2_End_Message_1_Thank_You')'));
+  $opts = array($timeout => 30.0, $attempts => 3, "bargein" => true, "mode" => "dtmf",
+		$interdigitTimout => 8, "onBadChoice" => $saybye, "onChoice" => "return");   //(create_function('$event', 'isay(0_2_End_Message_1_Thank_You')'));
   $cfg = array('opts' => $opts);
 
   $cinfo = array();
@@ -289,8 +290,7 @@ function main ($maint_auth = false) {
   _log("Caller: " . $cinfo['caller_number']);
   $cinfo['network'] = $currentCall->network;
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
-  answer();
-  // 0.1 IVRS - Welcome Message
+    // 0.1 IVRS - Welcome Message
   isay("0_1_Welcome_Message"); wait(100);
   // 1.1 IVRS - Get healthcare center
   $cinfo = get_siteinfo($cinfo, $cfg);
