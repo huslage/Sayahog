@@ -75,42 +75,43 @@ $sites['0032'] = array('name'=>'Chil', 'location'=>'25.152229,82.563699', 'phone
 
 // ask ask ask ask ask ask
 function askaskask($question, $options) {    
-  $result = ask($question, $options);
+  $result = ask($question, $options); wait(10000);
   return $result;  
 }
 
 
 // IVRS 0.3 - Try again later
-function sorry_message ($cinfo) {
+function sorry_message ($cinfo, $event) {
     if (DBG) {
-      say("Sorry, sending you back to the main menu.");
-      say("Here was the information we were able to collect"); wait(2000);
+      _log("We're in sorry_message, so something has gone horribly wrong!");
+      //      say("Sorry, sending you back to the main menu.");
+      // say("Here was the information we were able to collect"); wait(2000);
       foreach ($cinfo as $k => $v) {
-	say("Key named" . $k . " with value " . $v); wait(700);
-	_log("Key: " . $k . " Value: " . $v);
+	_log("Key named" . $k . " with value " . $v); wait(700);
+	//	_log("Key: " . $k . " Value: " . $v);
       }
 }
-    _log("IVRS 0.3 - Caller at $currentCall->CallerId was unable to use the menu :(");
+    _log("IVRS 0.3 - Caller at " . $currentCall->CallerId . " was unable to use the menu :(");
     wait(10000); main();
 }
 
 
 function get_siteinfo ($cinfo, $cfg) {
   global $sites;
-  if(DBG){say("Currently trying to get site info."); wait(1000);}
+  if(DBG){_log("Currently trying to get site info."); wait(1000);}
   // make sure we boot them if they can't get it after 3 tries
   if ($cinfo['sv_count'] > 2) { sorry_message($cinfo); }
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number",true));
   $choices = implode(",", array_keys($sites)); $defaults = $cfg['opts'];
   $options = array_merge($choices,$defaults);
-  _log(print_r($question)); _log(print_r($options));
-  $event = askaskask($question, $options);
-  say("Event Name " . $event->name . " Value " . $event->value);
-  if ($event->name=='choice') {
-    $cinfo['sitenum'] = $event->value;
-    $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name'];
-  } else { sorry_message($event); }
+  _log("The choices - " . $choices); _log(print_r($options));
+  $event = askaskask($question, $options); wait(3000);
+  _log("Event Name " . $event->name); _log(" Value " . $event->value);
+  if ($event->value) {
+    $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
+    $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name']; _log("sitename: " . $cinfo['sitename']);
+  } else { sorry_message($cinfo, $event); }
   wait(1500);
 
   // make sure they have it right by verifying!
