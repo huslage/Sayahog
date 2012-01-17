@@ -166,15 +166,15 @@ function get_siteinfo () {
 function get_itype () {
   global $cinfo, $icode;
   isay("2_1_Listen_Carefully");
-  foreach (range(0,9) as $i) {
-    isay("2_1_Press_" . $i); wait(200);
+  foreach (range(0,8) as $i) {
+    isay("2_1_Press_" . $i); 
   }
-$choices = implode(range(0,9)); _log("get_itype choices: " . $choices);
-$event = ask("", array("choices"  => $choices,
+  $question = isay("2_1_Press_9",true);
+  $event = ask($question, array("choices"  => '0,1,2,3,4,5,6,7,8,9',
 		       "bargein"  => true,
 		       "attempts" => 3,
 		       "onBadChoice" => "byenow"));
-$cinfo['itype'] = $event->value;
+$cinfo['icode'] = $event->value;
 _log("Going from get_itype to incident_action");
   wait(300); incident_action();
   }
@@ -183,12 +183,12 @@ _log("Going from get_itype to incident_action");
 // IVRS 2.1.i - Action
   function incident_action (){
     global $cinfo, $icode;
-    $itype = $cinfo['itype'];
+    $itype = $cinfo['icode'];
     $cinfo['incident_description'] = $icode[$itype];
-    if ($cinfo['incident_description'] == 0) { 
+    if ($cinfo['icode'] == 0) { 
       urgent_action();
     }
-    if ($incident_action < 9 ) {
+    if ($cinfo['icode'] < 9 ) {
         money_demanded();
     }
 }
