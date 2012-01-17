@@ -110,12 +110,12 @@ function findSite($event) {
   } else {
       $cinfo['sv_count'] += 1;
       _log("didn't find site: " . $e);
-      get_siteinfo($cinfo, $cfg); // loop back around again, pardner
+      get_siteinfo($cinfo); // loop back around again, pardner
   }
 }
  
 
-function get_siteinfo ($cinfo, $cfg) {
+function get_siteinfo ($cinfo) {
   global $sites, $cinfo, $icode;
   if(DBG){_log("Currently trying to get site info.");}
   // make sure we boot them if they can't get it after 3 tries
@@ -153,13 +153,13 @@ function get_siteinfo ($cinfo, $cfg) {
   } else {
       $cinfo['sv_count'] += 1;
       _log("didn't find site: " . $e);
-      get_siteinfo($cinfo, $cfg); // loop back around again, pardner
+      get_siteinfo($cinfo); // loop back around again, pardner
   }
   if ($vevent->value==1) { 
     $cinfo['site_verified'] = true; if(DBG){_log("site verified!");}
   } else {
     $cinfo['sv_count'] += 1;
-    get_siteinfo($cinfo,$cfg);
+    get_siteinfo($cinfo);
   }
 	      
 }
@@ -305,10 +305,7 @@ function main ($maint_auth = false) {
   isay("0_1_Welcome_Message");
 
   // IVR timeouts & such (lots of these are irrelevant)
-  $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
-  $opts = array($timeout => 30.0, $attempts => 3, "bargein" => true, "mode" => "dtmf",
-		$interdigitTimout => 8); 
-  $cfg = array('opts' => $opts);
+  // $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
   $cinfo = array();
   $cinfo['caller_number'] = $currentCall->callerID;
   _log("Caller: " . $cinfo['caller_number']);
