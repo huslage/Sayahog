@@ -115,21 +115,18 @@ function get_siteinfo ($cinfo, $cfg) {
 				"bargein"     => true,
 				"attempts"    => 3,
 				"onBadChoice" => "byenow"));
-  wait(300);
   $e = $event->value;
-  if (array_key_exists($e,$sites)) {
-    _log("Found site " . $e);
-    } else {
-    $cinfo['sv_count']++;
-    _log("didn't find site: " . $e);
-    get_siteinfo($cinfo, $cfg); // loop back around again, pardner
-   }
   _log("Event Name " . $event->name); _log(" Value " . $event->value);
-  if ($event->value) {
-    $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
-    $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name']; _log("sitename: " . $cinfo['sitename']);
-  } else { get_siteinfo(); }
-  wait(300);
+
+  if (array_key_exists($e,$sites)) {
+      _log("Found site " . $e);
+  } else {
+      $cinfo['sv_count']++;
+      _log("didn't find site: " . $e);
+      get_siteinfo($cinfo, $cfg); // loop back around again, pardner
+  }
+  $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
+  $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name']; _log("sitename: " . $cinfo['sitename']);
 
   // make sure they have it right by verifying!
   // 1.2 IVRS - Confirm the site number
@@ -144,21 +141,14 @@ function get_siteinfo ($cinfo, $cfg) {
 					    "mode"        => "dtmf",
 					    "attempts"    => 3,
 					    "onBadChoice" => "byenow"));
-  if ($vevent->name=='choice') {
-    if ($vevent->value==1) { 
-      $cinfo['site_verified'] = true; if(DBG){say("site verified!");}
-    } else {
-      $cinfo['sv_count'] + 1;
-      get_siteinfo($cinfo,$cfg);
-    }
+  if ($vevent->value==1) { 
+    $cinfo['site_verified'] = true; if(DBG){say("site verified!");}
   } else {
-    _log("received " . $event->name . " and " . $event->value . ". Retrying.");
-    $cinfo['sv_count'] + 1;
+    $cinfo['sv_count']++;
     get_siteinfo($cinfo,$cfg);
   }
 	      
-  
-	       wait(300); get_itype();
+  get_itype();
 }
 //
 // end get_siteinfo()
