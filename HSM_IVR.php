@@ -76,9 +76,12 @@ $sites['0031'] = array('name'=>'Jamalpur', 'location'=>'25.09245,83.052788', 'ph
 $sites['0032'] = array('name'=>'Chil', 'location'=>'25.152229,82.563699', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District');
 // end decoder ring
 
+$cinfo = array();
+$icode = NULL;
 
 // IVRS 0.3 - Try again later
-function sorry_message ($cinfo, $event) {
+function sorry_message ($event) {
+    global $cinfo;
     if (DBG) {
       say("sorry! sending you back to the main menu.");
       _log("We're in sorry_message, so something has gone horribly wrong!");
@@ -115,14 +118,14 @@ function get_siteinfo () {
     _log("======================== Result: " . $e);
   if (array_key_exists($e,$sites)) {
     _log("Found site " . $e);
+    $cinfo['sitenum'] == $e; _log("sitenum: " . $cinfo['sitenum']);
+    $cinfo['sitename'] == $sites[$e]['name']; _log("sitename: " . $cinfo['sitename']);
   } else {
     _log("didn't find site: " . $e);
-    get_siteinfo($cinfo); // loop back around again, pardner
+    get_siteinfo(); // loop back around again, pardner
   }
 
   _log("Event Name " . $event->name); _log(" Value " . $e);
-  $cinfo['sitenum'] == $e; _log("sitenum: " . $cinfo['sitenum']);
-  $cinfo['sitename'] == $sites[$e]['name']; _log("sitename: " . $cinfo['sitename']);
 
   // make sure they have it right by verifying!
   // 1.2 IVRS - Confirm the site number
@@ -137,23 +140,23 @@ function get_siteinfo () {
     if ($vevent->value==1) { 
       $cinfo['site_verified'] = true; if(DBG){say("site verified!");}
     } else {
-      get_siteinfo($cinfo);
+      get_siteinfo();
     }
   } else {
     _log("received " . $event->name . " and " . $event->value . ". Retrying.");
     $cinfo['sv_count'] += 1;
-    get_siteinfo($cinfo);
+    get_siteinfo();
   }
 	      
   
-  wait(300); get_itype($cinfo);
+  wait(300); get_itype();
 }
 //
 // end get_siteinfo()
 
 
 // IVRS 2.1 - Type of incident */
-function get_itype ($cinfo) {
+function get_itype () {
   global $cinfo, $icode;
   $prompts = isay("2_1_Options");
   $event = ask($prompts, array("choices"  => '0,1,2,3,4,5,6,7,8,9',
@@ -163,12 +166,12 @@ function get_itype ($cinfo) {
 		       "onBadChoice" => "byenow"));
 $cinfo['icode'] = $event->value;
 _log("Going from get_itype to incident_action");
-  wait(300); incident_action($cinfo, $icode);
+  wait(300); incident_action();
   }
 
 
 // IVRS 2.1.i - Action
-  function incident_action ($cinfo, $icode){
+  function incident_action (){
     global $cinfo, $icode;
     $itype = $cinfo['icode'];
     $cinfo['incident_description'] = $icode[$itype];
@@ -176,12 +179,12 @@ _log("Going from get_itype to incident_action");
       urgent_action(); // TODO: This is section 1.4- we need some audio for it, I think?
     }
     if ($cinfo['icode'] < 9 ) {
-        money_demanded($cinfo, $icode);
+        money_demanded();
     }
 }
 
 // IVRS 3.1 - Money asked/spent
-function money_demanded ($cinfo, $icode) {
+function money_demanded () {
     global $cinfo, $icode;
     $question = isay("3_1_a__if_spent_less_that_500_or_more_than_500");
     $choices = '1,2';
@@ -191,11 +194,11 @@ function money_demanded ($cinfo, $icode) {
 			   "attempts" => 3,
 			   "onBadChoice" => "byenow"));
     $cinfo['money_code'] = $event->value;
-    confirmation($cinfo, $icode);
+    confirmation();
 }
 
 // IVRS 1.3 - Summary for Confirmation
-function confirmation($cinfo, $icode) {
+function confirmation() {
     global $cinfo, $icode;
     if ($cinfo['money_code'] > 1) { 
         $cinfo['money_demanded'] = 'More_than_500';
@@ -208,11 +211,11 @@ function confirmation($cinfo, $icode) {
 			   "bargein"  => true,
 			   "attempts" => 3,
 			   "onBadChoice" => "invalid_choice"));
-    capture_or_reset($cinfo,$event);
+    capture_or_reset($event);
 }
 
 // U-turn folks who want another shot
-function capture_or_reset ($cinfo,$event) {
+function capture_or_reset ($event) {
     global $cinfo;
     _log("in capture_or_reset");
     if ($event->value == 1) { 
@@ -220,7 +223,7 @@ function capture_or_reset ($cinfo,$event) {
 	byenow();
     }
     else if ($event == 2) { 
-      get_itype($cinfo);
+      get_itype();
     }
 }
 
@@ -234,7 +237,7 @@ function urgent_action() {
 }
 
 // hand data to ushahidi (for huslage <3 )
-function capture_data ($cinfo) {
+function capture_data () {
     global $cinfo;
     _log(json_encode($cinfo));
     byenow();
@@ -270,7 +273,7 @@ function supers() {
 // IVR MAIN
 function main ($maint_auth = false) {
   answer();
-  global $cinfo, $sites, $itypes;
+  global $cinfo, $sites, $icode;
   if ($maint_auth) { 
     say("Maintenance mode entered. Warning, Hull breach imminent!");
   } else {
@@ -291,7 +294,7 @@ function main ($maint_auth = false) {
     // 0.1 IVRS - Welcome Message
   isay("0_1_Welcome_Message"); wait(100);
   // 1.1 IVRS - Get healthcare center
-  $cinfo = get_siteinfo($cinfo);
+  $cinfo = get_siteinfo();
   $cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
