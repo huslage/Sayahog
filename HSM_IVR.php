@@ -1,7 +1,7 @@
 <?php
 
 // debugging messages
-define("DBG", false);
+define("DBG", true);
 
 
 // !!! MAINTENANCE MODE LEVER !!!
@@ -87,7 +87,6 @@ function askaskask($question, $options) {
 // IVRS 0.3 - Try again later
 function sorry_message ($cinfo, $event) {
     if (DBG) {
-      say("sorry! sending you back to the main menu.");
       _log("We're in sorry_message, so something has gone horribly wrong!");
       //      say("Sorry, sending you back to the main menu.");
       // say("Here was the information we were able to collect"); wait(2000);
@@ -101,6 +100,7 @@ function sorry_message ($cinfo, $event) {
 }
 
 function find_site($event) {
+  if(DBG){_log("Currently trying to LOOK UP site info.");}
   $e = $event->value;
   _log("counter " . $cinfo['sv_count']);
   _log("Event Name " . $event->name); _log(" Value " . $event->value);
@@ -122,15 +122,15 @@ function get_siteinfo ($cinfo, $cfg) {
   if ($cinfo['sv_count'] >= 2) { invalid_choice(); }
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number",true));
-  $choices = "[4 DIGITS]";
-  _log("The choices - " . $choices);
-  $event = ask($question, array("choices"     => $choices,
+
+  $event = ask($question, array("choices"     => "[4 DIGITS]",
 				"mode"        => "dtmf",
 				"bargein"     => true,
 				"attempts"    => 3,
 				"onChoice"    => "find_site" ));
 				//"onBadChoice" => "byenow"));
- $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
+
+  $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
   $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name']; _log("sitename: " . $cinfo['sitename']);
 
   // make sure they have it right by verifying!
@@ -143,11 +143,21 @@ function get_siteinfo ($cinfo, $cfg) {
   // ask for sure
   $vevent = ask($verification_prompt, array("choices"     => '1,2', 
 					    "bargein"     => true,
-					    "mode"        => "dtmf",
+					  $e = $event->value;
+  _log("Event Name " . $event->name); _log(" Value " . $event->value);
+
+  if (array_key_exists($e,$sites)) {
+      _log("Found site " . $e);
+  } else {
+      $cinfo['sv_count'] += 1;
+      _log("didn't find site: " . $e);
+      get_siteinfo($cinfo, $cfg); // loop back around again, pardner
+  }
+     "mode"        => "dtmf",
 					    "attempts"    => 3));
 					    //"onBadChoice" => "byenow"));
   if ($vevent->value==1) { 
-    $cinfo['site_verified'] = true; if(DBG){say("site verified!");}
+    $cinfo['site_verified'] = true; if(DBG){_log("site verified!");}
   } else {
     $cinfo['sv_count'] += 1;
     get_siteinfo($cinfo,$cfg);
