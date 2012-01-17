@@ -77,29 +77,28 @@ $sites['0032'] = array('name'=>'Chil', 'location'=>'25.152229,82.563699', 'phone
 // end decoder ring
 
 
-
 // ask ask ask ask ask ask
-/* function askaskask($question, $options) {     */
-/*   $result = ask($question, $options); wait(300); */
-/*   return $result;   */
-/* } */
+function askaskask($question, $options) {    
+  $result = ask($question, $options); wait(300);
+  return $result;  
+}
 
 
 // IVRS 0.3 - Try again later
-/* function sorry_message ($cinfo, $event) { */
-/*     if (DBG) { */
-/*       //say("sorry! sending you back to the main menu."); */
-/*       _log("We're in sorry_message, so something has gone horribly wrong!"); */
-/*       //      say("Sorry, sending you back to the main menu."); */
-/*       // say("Here was the information we were able to collect"); wait(2000); */
-/*       foreach ($cinfo as $k => $v) { */
-/* 	_log("Key named" . $k . " with value " . $v); */
-/*       } */
-/* } */
-/*     _log("IVRS 0.3 - Caller at " . $currentCall->CallerId . " was unable to use the menu :("); */
-/*     //say("ok, sending you back to the main menu!");  */
-/*     wait(300); main(); */
-/* } */
+function sorry_message ($cinfo, $event) {
+    if (DBG) {
+      say("sorry! sending you back to the main menu.");
+      _log("We're in sorry_message, so something has gone horribly wrong!");
+      //      say("Sorry, sending you back to the main menu.");
+      // say("Here was the information we were able to collect"); wait(2000);
+      foreach ($cinfo as $k => $v) {
+	_log("Key named" . $k . " with value " . $v);
+      }
+}
+    _log("IVRS 0.3 - Caller at " . $currentCall->CallerId . " was unable to use the menu :(");
+    say("ok, sending you back to the main menu!"); 
+    wait(300); main();
+}
 
 
 function get_siteinfo () {
@@ -108,9 +107,7 @@ function get_siteinfo () {
   // make sure we boot them if they can't get it after 3 tries
   if ($cinfo['sv_count'] > 2) { invalid_choice(); }
   // put the message together
-  // 0.1 IVRS - Welcome Message
-  isay("0_1_Welcome_Message");
-  $question = isay("1_1_Enter_4_digit_code_number");
+  $question = (isay("1_1_Enter_4_digit_code_number",true));
   $choices = "[4-DIGITS]";
   _log("The choices - " . $choices);
   $event = ask($question, array("choices"     => $choices,
@@ -285,15 +282,9 @@ function supers() {
   main($maint_auth);
 }
 
-
-
 // IVR MAIN
 function main ($maint_auth = false) {
-  global $cinfo;
-  $cinfo['caller_number'] = $currentCall->callerID; _log("Caller: " . $cinfo['caller_number']);
-  $cinfo['network'] = $currentCall->network;
-  if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
-  //answer();
+  answer();
   global $cinfo, $sites, $itypes;
   if ($maint_auth) { 
     say("Maintenance mode entered. Warning, Hull breach imminent!");
@@ -303,16 +294,22 @@ function main ($maint_auth = false) {
       ask("",array("choices" => MAINTPW, "timeout" => 120.0, onTimeout => "hangup", "onChoice" => "supers")); 
       _log("Somebody called during maintenance: " . $currentCall->callerID); hangup(); }
   }
-  // kick off everything else!
-  get_siteinfo();
+  // 0.1 IVRS - Welcome Message
+  isay("0_1_Welcome_Message");
+
+  // IVR timeouts & such (lots of these are irrelevant)
+  $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
+  $opts = array($timeout => 30.0, $attempts => 3, "bargein" => true, "mode" => "dtmf",
+		$interdigitTimout => 8); 
+  $cfg = array('opts' => $opts);
   $cinfo = array();
   $cinfo['caller_number'] = $currentCall->callerID;
   _log("Caller: " . $cinfo['caller_number']);
   $cinfo['network'] = $currentCall->network;
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
     // 1.1 IVRS - Get healthcare center
-  
-  //$cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
+  get_siteinfo();
+  $cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
 // let's get this party started
