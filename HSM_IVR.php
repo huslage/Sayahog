@@ -217,11 +217,11 @@ function confirmation() {
         $cinfo['money_demanded'] = 'Less_than_500';
     }
     isay("part_1_you");
-    isay($cinfo['site_number']);
+    isay($cinfo['site_number'] . "_Name");
     isay("part_2_name_of_hospital_details");
     isay($cinfo['money_demanded']);
-    isay("part_3_amount_money");
-    $event = ask("", array("choices"  => '1,2',
+    $question = isay("part_3_amount_money",true);
+    $event = ask($question, array("choices"  => '1,2',
 			   "bargein"  => true,
 			   "attempts" => 3,
 			   "onBadChoice" => "invalid_choice"));
