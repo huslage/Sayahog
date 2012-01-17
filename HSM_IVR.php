@@ -113,8 +113,8 @@ function get_siteinfo ($cinfo, $cfg) {
   $event = ask($question, array("choices"     => $choices,
 				"mode"        => "dtmf",
 				"bargein"     => true,
-				"attempts"    => 3,
-				"onBadChoice" => "byenow"));
+				"attempts"    => 3));
+				//"onBadChoice" => "byenow"));
   $e = $event->value;
   _log("Event Name " . $event->name); _log(" Value " . $event->value);
 
@@ -139,8 +139,8 @@ function get_siteinfo ($cinfo, $cfg) {
   $vevent = ask($verification_prompt, array("choices"     => '1,2', 
 					    "bargein"     => true,
 					    "mode"        => "dtmf",
-					    "attempts"    => 3,
-					    "onBadChoice" => "byenow"));
+					    "attempts"    => 3));
+					    //"onBadChoice" => "byenow"));
   if ($vevent->value==1) { 
     $cinfo['site_verified'] = true; if(DBG){say("site verified!");}
   } else {
@@ -268,8 +268,7 @@ function invalid_choice () {
 }
 
 function byenow () {
-    isay("0_2_End_Message_1_Thank_You");
-    hangup();
+    isay("0_3_End_Message_2_Not_entered_a_valid_choice");
 }
 
 function supers() {
@@ -304,7 +303,7 @@ function main ($maint_auth = false) {
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
     // 1.1 IVRS - Get healthcare center
   get_siteinfo($cinfo, $cfg);
-  $cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
+  //$cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
 // let's get this party started
