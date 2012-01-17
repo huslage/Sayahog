@@ -1,11 +1,11 @@
 <?php
 
 // debugging messages
-define("DBG", true);
+define("DBG", false);
 
 
 // !!! MAINTENANCE MODE LEVER !!!
-define("MAINT", true);
+define("MAINT", false);
 define("MAINTPW", '8');
 define("MAINT_MSG","The help line is currently undergoing maintenance. Please call again later.",array("voice" => "kate"));
 
