@@ -102,7 +102,7 @@ function sorry_message ($cinfo, $event) {
 
 function find_site($event) {
   $e = $event->value;
-  _log("counter " . $cinfo['sv_count'];
+  _log("counter " . $cinfo['sv_count']);
   _log("Event Name " . $event->name); _log(" Value " . $event->value);
 
   if (array_key_exists($e,$sites)) {
