@@ -154,10 +154,10 @@ function get_siteinfo () {
     $cinfo['sv_count'] + 1;
     get_siteinfo($cinfo,$cfg);
   }
-	       }
+	      
   
 	       wait(300); get_itype();
- 
+}
 //
 // end get_siteinfo()
 
