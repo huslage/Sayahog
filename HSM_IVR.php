@@ -124,7 +124,7 @@ function get_siteinfo ($cinfo, $cfg) {
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number",true));
 
-  $event = ask($question, array("choices"     => "[0-9],[0-9],[0-9],[0-9]",
+  $event = ask($question, array("choices"     => "[4-4 DIGITS]",
 				"mode"        => "dtmf",
 				"bargein"     => true,
 				"terminator"  => "#",
