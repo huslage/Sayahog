@@ -1,4 +1,5 @@
 <?php
+answer();
 
 // debugging messages
 define("DBG", false);
