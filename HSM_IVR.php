@@ -119,8 +119,8 @@ function get_siteinfo () {
     _log("======================== Result: " . $e);
   if (array_key_exists($e,$sites)) {
     _log("Found site " . $e);
-    $cinfo['sitenum'] == $e; _log("sitenum: " . $cinfo['sitenum']);
-    $cinfo['sitename'] == $sites[$e]['name']; _log("sitename: " . $cinfo['sitename']);
+    $cinfo['sitenum'] = $e; _log("sitenum: " . $cinfo['sitenum']);
+    $cinfo['sitename'] = $sites[$e]['name']; _log("sitename: " . $cinfo['sitename']);
   } else {
     _log("didn't find site: " . $e);
     get_siteinfo(); // loop back around again, pardner
@@ -249,9 +249,8 @@ function flog ($message) {
 }
   
 // wrapper for say()- includes the prefix/suffix for the audio files.
-function isay ($message, $rs=false) { // rs is a bool for 'return string'
+function isay ($message) { 
   $newmessage = (AURL . $message . ATYPE); 
-  if (DBG) {_log("isay $newmessage");}
   return $newmessage;
 }
 
