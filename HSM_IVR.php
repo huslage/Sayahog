@@ -99,8 +99,7 @@ function sorry_message ($cinfo, $event) {
     wait(300); main();
 }
 
-function find_site($event) {
-  _log(print_r($event));
+function findSite($event) {
   if(DBG){_log("Currently trying to LOOK UP site info.");}
   $e = $event->value;
   _log("counter " . $cinfo['sv_count']);
@@ -127,9 +126,7 @@ function get_siteinfo ($cinfo, $cfg) {
   $event = ask($question, array("choices"     => "[4-4 DIGITS]",
 				"mode"        => "dtmf",
 				"bargein"     => true,
-				"terminator"  => "#",
-				"attempts"    => 3,
-				"onChoice"    => "find_site" ));
+				"onChoice"    => "findSite" ));
 				//"onBadChoice" => "byenow"));
 
   $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
