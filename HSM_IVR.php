@@ -165,12 +165,12 @@ function get_siteinfo () {
 // IVRS 2.1 - Type of incident */
 function get_itype () {
   global $cinfo, $icode;
-  isay("2_1_Listen_Carefully");
-  foreach (range(0,8) as $i) {
-    isay("2_1_Press_" . $i); 
+  $prompts = array(isay("2_1_Listen_Carefully"));
+  foreach (range(0,9) as $i) {
+    $prompts = array_push(isay("2_1_Press_" . $i,true)); 
   }
-  $question = isay("2_1_Press_9",true);
-  $event = ask($question, array("choices"  => '0,1,2,3,4,5,6,7,8,9',
+  //$question = isay("2_1_Press_9",true);
+  $event = ask($prompts, array("choices"  => '0,1,2,3,4,5,6,7,8,9',
 		       "bargein"  => true,
 		       "attempts" => 3,
 		       "onBadChoice" => "byenow"));
