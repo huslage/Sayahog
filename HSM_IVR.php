@@ -186,7 +186,7 @@ _log("Going from get_itype to incident_action");
     $itype = $cinfo['icode'];
     $cinfo['incident_description'] = $icode[$itype];
     if ($cinfo['icode'] == 0) { 
-      urgent_action();
+      urgent_action(); // TODO: This is section 1.4- we need some audio for it, I think?
     }
     if ($cinfo['icode'] < 9 ) {
         money_demanded();
@@ -198,13 +198,14 @@ function money_demanded () {
     global $cinfo, $icode;
     isay("3_1_a__if_spent_less_that_500_or_more_than_500");
     isay("Less_than_500");
-    isay("More_than_500");
-    $answers = '1,2';
-    $event = ask("", array("choices"  => $choices,
+    $question = isay("More_than_500",true);
+    $choices = '1,2';
+    $event = ask($question, array("choices"  => $choices,
 			   "bargein"  => true,
 			   "attempts" => 3,
 			   "onBadChoice" => "byenow"));
     $cinfo['money_code'] = $event->value;
+    confirmation();
 }
 
 // IVRS 1.3 - Summary for Confirmation
@@ -233,6 +234,7 @@ function capture_or_reset ($event) {
     _log("in capture_or_reset");
     if ($event->value == 1) { 
         capture_data();
+	byenow();
     }
     else if ($event == 2) { 
       get_itype();
