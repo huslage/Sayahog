@@ -10,6 +10,13 @@ define("MAINTPW", '8');
 define("MAINT_MSG","The help line is currently undergoing maintenance. Please call again later.",array("voice" => "kate"));
 
 
+// big crazy ball of global variable goo
+$cinfo = array();
+$cinfo['caller_number'] = $currentCall->callerID; _log("Caller: " . $cinfo['caller_number']);
+$cinfo['network'] = $currentCall->network;
+if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
+
+
 // geocode stuff
 define("MAPS_LOOKUP_BASE_URL", "http://maps.googleapis.com/maps/api/geocode/json");
 define("USHAHIDI_BASE_URL", "http://ec2-50-112-5-172.us-west-2.compute.amazonaws.com/admin");
@@ -87,7 +94,7 @@ function askaskask($question, $options) {
 // IVRS 0.3 - Try again later
 function sorry_message ($cinfo, $event) {
     if (DBG) {
-      say("sorry! sending you back to the main menu.");
+      //say("sorry! sending you back to the main menu.");
       _log("We're in sorry_message, so something has gone horribly wrong!");
       //      say("Sorry, sending you back to the main menu.");
       // say("Here was the information we were able to collect"); wait(2000);
@@ -96,7 +103,7 @@ function sorry_message ($cinfo, $event) {
       }
 }
     _log("IVRS 0.3 - Caller at " . $currentCall->CallerId . " was unable to use the menu :(");
-    say("ok, sending you back to the main menu!"); 
+    //say("ok, sending you back to the main menu!"); 
     wait(300); main();
 }
 
@@ -285,9 +292,10 @@ function supers() {
 }
 
 
+
 // IVR MAIN
 function main ($maint_auth = false) {
-  answer();
+  //answer();
   global $cinfo, $sites, $itypes;
   if ($maint_auth) { 
     say("Maintenance mode entered. Warning, Hull breach imminent!");
@@ -299,10 +307,10 @@ function main ($maint_auth = false) {
   }
 
   // IVR timeouts & such (lots of these are irrelevant)
-  $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
-  $opts = array($timeout => 30.0, $attempts => 3, "bargein" => true, "mode" => "dtmf",
-		$interdigitTimout => 8); 
-  $cfg = array('opts' => $opts);
+  //$saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
+  //$opts = array($timeout => 30.0, $attempts => 3, "bargein" => true, "mode" => "dtmf",
+  //		$interdigitTimout => 8); 
+  //$cfg = array('opts' => $opts);
   $cinfo = array();
   $cinfo['caller_number'] = $currentCall->callerID;
   _log("Caller: " . $cinfo['caller_number']);
@@ -310,7 +318,7 @@ function main ($maint_auth = false) {
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
     // 1.1 IVRS - Get healthcare center
   get_siteinfo();
-  $cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
+  //$cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
 // let's get this party started
