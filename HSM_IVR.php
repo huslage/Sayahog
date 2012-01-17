@@ -106,6 +106,7 @@ function get_siteinfo () {
   $choices = "[4-DIGITS]";
   _log("The choices - " . $choices);
   $event = ask($question, array("choices"     => $choices,
+				"mode"	      => "dtmf",
 				"bargein"     => true,
 				"attempts"    => 3,
 				"onBadChoice" => "byenow"));
@@ -129,6 +130,7 @@ function get_siteinfo () {
   $verification_prompt = isay($cinfo['sitenum'] . "_Verification");
   // ask for sure
   $vevent = ask($verification_prompt, array("choices"     => '1,2', 
+				            "mode"	  => "dtmf",
 					    "bargein"     => true,
 					    "attempts"    => 3,
 					    "onBadChoice" => "byenow"));
@@ -156,6 +158,7 @@ function get_itype () {
   global $cinfo, $icode;
   $prompts = isay("2_1_Options");
   $event = ask($prompts, array("choices"  => '0,1,2,3,4,5,6,7,8,9',
+		       "mode"	  => "dtmf",
 		       "bargein"  => true,
 		       "attempts" => 3,
 		       "onBadChoice" => "byenow"));
@@ -184,6 +187,7 @@ function money_demanded () {
     $question = isay("3_1_a__if_spent_less_that_500_or_more_than_500");
     $choices = '1,2';
     $event = ask($question, array("choices"  => $choices,
+		           "mode"     => "dtmf",
 			   "bargein"  => true,
 			   "attempts" => 3,
 			   "onBadChoice" => "byenow"));
@@ -201,6 +205,7 @@ function confirmation() {
     }
     $question = isay($cinfo['site_number'] . "_Money_Demanded_" . $cinfo['money_demanded']);
     $event = ask($question, array("choices"  => '1,2',
+		           "mode"     => "dtmf",
 			   "bargein"  => true,
 			   "attempts" => 3,
 			   "onBadChoice" => "invalid_choice"));
@@ -272,7 +277,7 @@ function main ($maint_auth = false) {
   } else {
     if (MAINT) { 
       say(MAINT_MSG); 
-      ask("",array("choices" => MAINTPW, "timeout" => 120.0, onTimeout => "hangup", "onChoice" => "supers")); 
+      ask("",array("choices" => MAINTPW, mode => "dtmf", "timeout" => 120.0, onTimeout => "hangup", "onChoice" => "supers")); 
       _log("Somebody called during maintenance: " . $currentCall->callerID); hangup(); }
   }
 
