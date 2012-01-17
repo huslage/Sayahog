@@ -132,11 +132,11 @@ function get_siteinfo () {
 
   // make sure they have it right by verifying!
   // 1.2 IVRS - Confirm the site number
-  $verification_prompt = array(isay("part_1__you_have_entered_the_code_xxxx"));
-  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Code"));
-  $verification_prompt = array_push(isay("part_2__which_corresponds_to"));
-  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Name")); 
-  $verification_prompt = array_push(isay("part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2"));
+  $verification_prompt = array(isay("part_1__you_have_entered_the_code_xxxx",true));
+  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Code",true));
+  $verification_prompt = array_push(isay("part_2__which_corresponds_to",true));
+  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Name",true)); 
+  $verification_prompt = array_push(isay("part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2",true));
   // ask for sure
   $vevent = ask($verification_prompt, array("choices"     => '1,2', 
 					    "bargein"     => true,
@@ -165,11 +165,10 @@ function get_siteinfo () {
 // IVRS 2.1 - Type of incident */
 function get_itype () {
   global $cinfo, $icode;
-  isay("2_1_Listen_Carefully");
-  foreach (range(0,8) as $i) {
-    isay("2_1_Press_" . $i); 
+  $question = array(isay("2_1_Listen_Carefully",true));
+  foreach (range(0,9) as $i) {
+    $question = array_push(isay("2_1_Press_" . $i,true)); 
   }
-  $question = isay("2_1_Press_9",true);
   $event = ask($question, array("choices"  => '0,1,2,3,4,5,6,7,8,9',
 		       "bargein"  => true,
 		       "attempts" => 3,
@@ -188,7 +187,7 @@ _log("Going from get_itype to incident_action");
     if ($cinfo['icode'] == 0) { 
       urgent_action(); // TODO: This is section 1.4- we need some audio for it, I think?
     }
-    if ($cinfo['icode'] < 9 ) {
+    if ($cinfo['icode']) {
         money_demanded();
     }
 }
@@ -245,6 +244,7 @@ function capture_or_reset ($event) {
 // !!! URGENT ACTION REQUIRED !!!
 function urgent_action() {
   global $cinfo;
+  confirmation();
   // use the goodies in the $cinfo array to pull their info.
   //$cinfo['sitenum']['sitename'] etc.
   // TODO: figure out what this is supposed to activate and who to call.
