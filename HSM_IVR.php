@@ -108,7 +108,7 @@ function get_siteinfo ($cinfo, $cfg) {
   if ($cinfo['sv_count'] > 2) { invalid_choice(); }
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number",true));
-  $choices = "[4-DIGITS]";
+  $choices = "[4 DIGITS]";
   _log("The choices - " . $choices);
   $event = ask($question, array("choices"     => $choices,
 				"mode"        => "dtmf",
