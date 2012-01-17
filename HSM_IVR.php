@@ -100,6 +100,7 @@ function sorry_message ($cinfo, $event) {
 }
 
 function find_site($event) {
+  DBG : _log(print_r($event));
   if(DBG){_log("Currently trying to LOOK UP site info.");}
   $e = $event->value;
   _log("counter " . $cinfo['sv_count']);
@@ -123,9 +124,10 @@ function get_siteinfo ($cinfo, $cfg) {
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number",true));
 
-  $event = ask($question, array("choices"     => "[4 DIGITS]",
+  $event = ask($question, array("choices"     => "[0-9],[0-9],[0-9],[0-9]",
 				"mode"        => "dtmf",
 				"bargein"     => true,
+				"terminator"  => "#",
 				"attempts"    => 3,
 				"onChoice"    => "find_site" ));
 				//"onBadChoice" => "byenow"));
@@ -163,7 +165,6 @@ function get_siteinfo ($cinfo, $cfg) {
     get_siteinfo($cinfo,$cfg);
   }
 	      
-  get_itype();
 }
 //
 // end get_siteinfo()
@@ -319,6 +320,7 @@ function main ($maint_auth = false) {
     // 1.1 IVRS - Get healthcare center
   get_siteinfo($cinfo, $cfg);
   _log("Back in Main");
+  get_itype();
   //$cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
