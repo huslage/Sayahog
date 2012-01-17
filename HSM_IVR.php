@@ -102,6 +102,7 @@ function sorry_message ($cinfo, $event) {
 
 function find_site($event) {
   $e = $event->value;
+  _log("counter " . $cinfo['sv_count'];
   _log("Event Name " . $event->name); _log(" Value " . $event->value);
 
   if (array_key_exists($e,$sites)) {
@@ -118,7 +119,7 @@ function get_siteinfo ($cinfo, $cfg) {
   global $sites, $cinfo, $icode;
   if(DBG){_log("Currently trying to get site info.");}
   // make sure we boot them if they can't get it after 3 tries
-  if ($cinfo['sv_count'] > 2) { invalid_choice(); }
+  if ($cinfo['sv_count'] >= 2) { invalid_choice(); }
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number",true));
   $choices = "[4 DIGITS]";
@@ -307,6 +308,7 @@ function main ($maint_auth = false) {
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
     // 1.1 IVRS - Get healthcare center
   get_siteinfo($cinfo, $cfg);
+  _log("Back in Main");
   //$cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
