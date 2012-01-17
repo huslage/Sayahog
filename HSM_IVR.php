@@ -100,6 +100,19 @@ function sorry_message ($cinfo, $event) {
     wait(300); main();
 }
 
+function find_site($event) {
+  $e = $event->value;
+  _log("Event Name " . $event->name); _log(" Value " . $event->value);
+
+  if (array_key_exists($e,$sites)) {
+      _log("Found site " . $e);
+  } else {
+      $cinfo['sv_count'] += 1;
+      _log("didn't find site: " . $e);
+      get_siteinfo($cinfo, $cfg); // loop back around again, pardner
+  }
+}
+ 
 
 function get_siteinfo ($cinfo, $cfg) {
   global $sites, $cinfo, $icode;
@@ -113,19 +126,10 @@ function get_siteinfo ($cinfo, $cfg) {
   $event = ask($question, array("choices"     => $choices,
 				"mode"        => "dtmf",
 				"bargein"     => true,
-				"attempts"    => 3));
+				"attempts"    => 3,
+				"onChoice"    => "find_site" ));
 				//"onBadChoice" => "byenow"));
-  $e = $event->value;
-  _log("Event Name " . $event->name); _log(" Value " . $event->value);
-
-  if (array_key_exists($e,$sites)) {
-      _log("Found site " . $e);
-  } else {
-      $cinfo['sv_count'] += 1;
-      _log("didn't find site: " . $e);
-      get_siteinfo($cinfo, $cfg); // loop back around again, pardner
-  }
-  $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
+ $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
   $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name']; _log("sitename: " . $cinfo['sitename']);
 
   // make sure they have it right by verifying!
