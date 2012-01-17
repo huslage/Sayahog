@@ -110,7 +110,7 @@ function get_siteinfo () {
   // put the message together
   // 0.1 IVRS - Welcome Message
   isay("0_1_Welcome_Message");
-  $question = array(isay("1_1_Enter_4_digit_code_number",true));
+  $question = isay("1_1_Enter_4_digit_code_number");
   $choices = "[4-DIGITS]";
   _log("The choices - " . $choices);
   $event = ask($question, array("choices"     => $choices,
