@@ -100,6 +100,17 @@ function sorry_message ($cinfo, $event) {
     wait(300); main();
 }
 
+function find_site($event) {
+   global $sites;
+   if (array_key_exists($event->value,$sites)) {
+    _log("Found site " . $e);
+    return true;
+    } else {
+    _log("didn't find site: " . $e);
+    return false;
+   }
+}
+
 
 function get_siteinfo ($cinfo, $cfg) {
   global $sites, $cinfo, $icode;
@@ -108,27 +119,15 @@ function get_siteinfo ($cinfo, $cfg) {
   if ($cinfo['sv_count'] > 2) { invalid_choice(); }
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number",true));
-  $choices = "[4 DIGITS]";
-  _log("The choices - " . $choices);
-  $event = ask($question, array("choices"     => $choices,
+  $event = ask($question, array("choices"     => "[4 DIGITS]",
 				"mode"        => "dtmf",
 				"bargein"     => true,
 				"attempts"    => 3,
 				"onBadChoice" => "byenow"));
-  wait(300);
-  $e = $event->value;
-  if (array_key_exists($e,$sites)) {
-    _log("Found site " . $e);
-    } else {
-    $cinfo['sv_count']++;
-    _log("didn't find site: " . $e);
-    get_siteinfo($cinfo, $cfg); // loop back around again, pardner
-   }
+
   _log("Event Name " . $event->name); _log(" Value " . $event->value);
-  if ($event->value) {
-    $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
-    $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name']; _log("sitename: " . $cinfo['sitename']);
-  } else { get_siteinfo(); }
+  $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
+  $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name']; _log("sitename: " . $cinfo['sitename']);
   wait(300);
 
   // make sure they have it right by verifying!
@@ -143,6 +142,7 @@ function get_siteinfo ($cinfo, $cfg) {
 					    "bargein"     => true,
 					    "mode"        => "dtmf",
 					    "attempts"    => 3,
+                                            "onChoice"    => "verifysite",
 					    "onBadChoice" => "byenow"));
   if ($vevent->name=='choice') {
     if ($vevent->value==1) { 
