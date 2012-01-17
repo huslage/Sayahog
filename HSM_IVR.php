@@ -106,6 +106,7 @@ function get_siteinfo () {
   if(DBG){_log("Currently trying to get site info.");}
   // make sure we boot them if they can't get it after 3 tries
   if ($cinfo['sv_count'] > 2) { invalid_choice(); }
+  $cinfo['sv_count'] += 1;
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number"));
   $choices = "[4-DIGITS]";
@@ -114,12 +115,11 @@ function get_siteinfo () {
 				"bargein"     => true,
 				"attempts"    => 3,
 				"onBadChoice" => "byenow"));
-  wait(300);
   $e = $event->value;
+
   if (array_key_exists($e,$sites)) {
     _log("Found site " . $e);
     } else {
-    $cinfo['sv_count'] += 1;
     _log("didn't find site: " . $e);
     get_siteinfo($cinfo, $cfg); // loop back around again, pardner
    }
@@ -142,7 +142,6 @@ function get_siteinfo () {
     if ($vevent->value==1) { 
       $cinfo['site_verified'] = true; if(DBG){say("site verified!");}
     } else {
-      $cinfo['sv_count'] += 1;
       get_siteinfo($cinfo,$cfg);
     }
   } else {
@@ -152,7 +151,7 @@ function get_siteinfo () {
   }
 	      
   
-	       wait(300); get_itype();
+  wait(300); get_itype();
 }
 //
 // end get_siteinfo()
@@ -208,7 +207,6 @@ function confirmation() {
     }
     $question = isay($cinfo['site_number'] . "_Money_Demanded_" . $cinfo['money_demanded']);
     $event = ask($question, array("choices"  => '1,2',
-        say(isay('Less_than_500'));
 			   "bargein"  => true,
 			   "attempts" => 3,
 			   "onBadChoice" => "invalid_choice"));
@@ -291,6 +289,7 @@ function main ($maint_auth = false) {
   $cfg = array('opts' => $opts);
   $cinfo = array();
   $cinfo['caller_number'] = $currentCall->callerID;
+  $cinfo['sv_count'] = 0;
   _log("Caller: " . $cinfo['caller_number']);
   $cinfo['network'] = $currentCall->network;
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
