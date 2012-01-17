@@ -1,11 +1,11 @@
 <?php
 
 // debugging messages
-define("DBG", false);
+define("DBG", true);
 
 
 // !!! MAINTENANCE MODE LEVER !!!
-define("MAINT", false);
+define("MAINT", true);
 define("MAINTPW", '8');
 define("MAINT_MSG","The help line is currently undergoing maintenance. Please call again later.",array("voice" => "kate"));
 
@@ -111,7 +111,6 @@ function get_siteinfo () {
   $choices = "[4-DIGITS]";
   _log("The choices - " . $choices);
   $event = ask($question, array("choices"     => $choices,
-				"mode"        => "dtmf",
 				"bargein"     => true,
 				"attempts"    => 3,
 				"onBadChoice" => "byenow"));
@@ -133,15 +132,14 @@ function get_siteinfo () {
 
   // make sure they have it right by verifying!
   // 1.2 IVRS - Confirm the site number
-  $verification_prompt = array(isay("part_1__you_have_entered_the_code_xxxx",true));
-  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Code",true));
-  $verification_prompt = array_push(isay("part_2__which_corresponds_to",true));
-  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Name",true)); 
-  $verification_prompt = array_push(isay("part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2",true));
+  $verification_prompt = array(isay("part_1__you_have_entered_the_code_xxxx"));
+  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Code"));
+  $verification_prompt = array_push(isay("part_2__which_corresponds_to"));
+  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Name")); 
+  $verification_prompt = array_push(isay("part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2"));
   // ask for sure
   $vevent = ask($verification_prompt, array("choices"     => '1,2', 
 					    "bargein"     => true,
-					    "mode"        => "dtmf",
 					    "attempts"    => 3,
 					    "onBadChoice" => "byenow"));
   if ($vevent->name=='choice') {
@@ -167,13 +165,13 @@ function get_siteinfo () {
 // IVRS 2.1 - Type of incident */
 function get_itype () {
   global $cinfo, $icode;
-  $question = array(isay("2_1_Listen_Carefully",true));
-  foreach (range(0,9) as $i) {
-    $question = array_push(isay("2_1_Press_" . $i,true)); 
+  isay("2_1_Listen_Carefully");
+  foreach (range(0,8) as $i) {
+    isay("2_1_Press_" . $i); 
   }
+  $question = isay("2_1_Press_9",true);
   $event = ask($question, array("choices"  => '0,1,2,3,4,5,6,7,8,9',
 		       "bargein"  => true,
-		       "mode"     => "dtmf",
 		       "attempts" => 3,
 		       "onBadChoice" => "byenow"));
 $cinfo['icode'] = $event->value;
@@ -190,7 +188,7 @@ _log("Going from get_itype to incident_action");
     if ($cinfo['icode'] == 0) { 
       urgent_action(); // TODO: This is section 1.4- we need some audio for it, I think?
     }
-    if ($cinfo['icode']) {
+    if ($cinfo['icode'] < 9 ) {
         money_demanded();
     }
 }
@@ -198,14 +196,13 @@ _log("Going from get_itype to incident_action");
 // IVRS 3.1 - Money asked/spent
 function money_demanded () {
     global $cinfo, $icode;
-    $question = array(isay("3_1_a__if_spent_less_that_500_or_more_than_500",true));
-    $question = array_push(isay("Less_than_500",true));
-    $question = array_push(isay("More_than_500",true));
+    isay("3_1_a__if_spent_less_that_500_or_more_than_500");
+    isay("Less_than_500");
+    $question = isay("More_than_500",true);
     $choices = '1,2';
     $event = ask($question, array("choices"  => $choices,
-			   "bargein"     => true,
-			   "attempts"    => 3,
-			   "mode"        => "dtmf",
+			   "bargein"  => true,
+			   "attempts" => 3,
 			   "onBadChoice" => "byenow"));
     $cinfo['money_code'] = $event->value;
     confirmation();
@@ -219,15 +216,14 @@ function confirmation() {
     } else { 
         $cinfo['money_demanded'] = 'Less_than_500';
     }
-    $question = array(isay("part_1_you",true));
-    $question = array_push(isay($cinfo['site_number'] . "_Name"));
-    $question = array_push(isay("part_2_name_of_hospital_details"));
-    $question = array_push(isay($cinfo['money_demanded']));
-    $question = array_push($question = isay("part_3_amount_money",true));
+    isay("part_1_you");
+    isay($cinfo['site_number'] . "_Name");
+    isay("part_2_name_of_hospital_details");
+    isay($cinfo['money_demanded']);
+    $question = isay("part_3_amount_money",true);
     $event = ask($question, array("choices"  => '1,2',
-			   "bargein"     => true,
-			   "attempts"    => 3,
-			   "mode"        => "dtmf",
+			   "bargein"  => true,
+			   "attempts" => 3,
 			   "onBadChoice" => "invalid_choice"));
     capture_or_reset($event);
 }
@@ -249,7 +245,6 @@ function capture_or_reset ($event) {
 // !!! URGENT ACTION REQUIRED !!!
 function urgent_action() {
   global $cinfo;
-  confirmation();
   // use the goodies in the $cinfo array to pull their info.
   //$cinfo['sitenum']['sitename'] etc.
   // TODO: figure out what this is supposed to activate and who to call.
@@ -287,6 +282,7 @@ function supers() {
   main($maint_auth);
 }
 
+
 // IVR MAIN
 function main ($maint_auth = false) {
   answer();
@@ -299,8 +295,6 @@ function main ($maint_auth = false) {
       ask("",array("choices" => MAINTPW, "timeout" => 120.0, onTimeout => "hangup", "onChoice" => "supers")); 
       _log("Somebody called during maintenance: " . $currentCall->callerID); hangup(); }
   }
-  // 0.1 IVRS - Welcome Message
-  isay("0_1_Welcome_Message");
 
   // IVR timeouts & such (lots of these are irrelevant)
   $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
@@ -312,8 +306,10 @@ function main ($maint_auth = false) {
   _log("Caller: " . $cinfo['caller_number']);
   $cinfo['network'] = $currentCall->network;
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
-    // 1.1 IVRS - Get healthcare center
-  get_siteinfo($cinfo, $cfg);
+    // 0.1 IVRS - Welcome Message
+  isay("0_1_Welcome_Message"); wait(100);
+  // 1.1 IVRS - Get healthcare center
+  $cinfo = get_siteinfo($cinfo, $cfg);
   $cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
