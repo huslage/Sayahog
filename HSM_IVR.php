@@ -107,7 +107,9 @@ function get_siteinfo () {
   // make sure we boot them if they can't get it after 3 tries
   if ($cinfo['sv_count'] > 2) { invalid_choice(); }
   // put the message together
-  $question = (isay("1_1_Enter_4_digit_code_number",true));
+  // 0.1 IVRS - Welcome Message
+  $question = array(isay("0_1_Welcome_Message",true));
+  $question = array_push(isay("1_1_Enter_4_digit_code_number",true));
   $choices = "[4-DIGITS]";
   _log("The choices - " . $choices);
   $event = ask($question, array("choices"     => $choices,
@@ -195,9 +197,9 @@ _log("Going from get_itype to incident_action");
 // IVRS 3.1 - Money asked/spent
 function money_demanded () {
     global $cinfo, $icode;
-    isay("3_1_a__if_spent_less_that_500_or_more_than_500");
-    isay("Less_than_500");
-    $question = isay("More_than_500",true);
+    $question = array(isay("3_1_a__if_spent_less_that_500_or_more_than_500",true));
+    $question = array_push(isay("Less_than_500",true));
+    $question = array_push(isay("More_than_500",true));
     $choices = '1,2';
     $event = ask($question, array("choices"  => $choices,
 			   "bargein"  => true,
@@ -215,11 +217,11 @@ function confirmation() {
     } else { 
         $cinfo['money_demanded'] = 'Less_than_500';
     }
-    isay("part_1_you");
-    isay($cinfo['site_number'] . "_Name");
-    isay("part_2_name_of_hospital_details");
-    isay($cinfo['money_demanded']);
-    $question = isay("part_3_amount_money",true);
+    $question = array(isay("part_1_you",true));
+    $question = array_push(isay($cinfo['site_number'] . "_Name"));
+    $question = array_push(isay("part_2_name_of_hospital_details"));
+    $question = array_push(isay($cinfo['money_demanded']));
+    $question = array_push($question = isay("part_3_amount_money",true));
     $event = ask($question, array("choices"  => '1,2',
 			   "bargein"  => true,
 			   "attempts" => 3,
@@ -306,10 +308,8 @@ function main ($maint_auth = false) {
   _log("Caller: " . $cinfo['caller_number']);
   $cinfo['network'] = $currentCall->network;
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
-    // 0.1 IVRS - Welcome Message
-  isay("0_1_Welcome_Message"); wait(100);
-  // 1.1 IVRS - Get healthcare center
-  $cinfo = get_siteinfo($cinfo, $cfg);
+    // 1.1 IVRS - Get healthcare center
+  get_siteinfo();
   $cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
