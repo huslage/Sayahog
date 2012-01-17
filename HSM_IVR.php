@@ -77,13 +77,6 @@ $sites['0032'] = array('name'=>'Chil', 'location'=>'25.152229,82.563699', 'phone
 // end decoder ring
 
 
-// ask ask ask ask ask ask
-function askaskask($question, $options) {    
-  $result = ask($question, $options); wait(300);
-  return $result;  
-}
-
-
 // IVRS 0.3 - Try again later
 function sorry_message ($cinfo, $event) {
     if (DBG) {
@@ -107,6 +100,7 @@ function get_siteinfo () {
   // make sure we boot them if they can't get it after 3 tries
   if ($cinfo['sv_count'] > 2) { invalid_choice(); }
   $cinfo['sv_count'] += 1;
+    _log("======================== Count: " . $e);
   // put the message together
   $question = (isay("1_1_Enter_4_digit_code_number"));
   $choices = "[4-DIGITS]";
@@ -116,7 +110,7 @@ function get_siteinfo () {
 				"attempts"    => 3,
 				"onBadChoice" => "byenow"));
   $e = $event->value;
-
+    _log("======================== Result: " . $e);
   if (array_key_exists($e,$sites)) {
     _log("Found site " . $e);
     } else {
