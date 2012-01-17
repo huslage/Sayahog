@@ -263,8 +263,9 @@ function flog ($message) {
   
 // wrapper for say()- includes the prefix/suffix for the audio files.
 function isay ($message, $rs=false) { // rs is a bool for 'return string'
-  $message = (AURL . $message . ATYPE); if (DBG) {_log("isay $message");}
-  return $message;
+  $newmessage = (AURL . $message . ATYPE); 
+  if (DBG) {_log("isay $newmessage");}
+  return $newmessage;
 }
 
 function invalid_choice () {
