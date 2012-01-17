@@ -115,7 +115,6 @@ function get_siteinfo () {
 				"onBadChoice" => "byenow"));
 
   $e = $event->value;
-    say($e);
     _log("======================== Result: " . $e);
   if (array_key_exists($e,$sites)) {
     _log("Found site " . $e);
@@ -139,7 +138,7 @@ function get_siteinfo () {
 					    "onBadChoice" => "byenow"));
   if ($vevent->name=='choice') {
     if ($vevent->value==1) { 
-      $cinfo['site_verified'] = true; if(DBG){say("site verified!");}
+      $cinfo['site_verified'] = true; 
     } else {
       get_siteinfo();
     }
@@ -201,12 +200,13 @@ function money_demanded () {
 // IVRS 1.3 - Summary for Confirmation
 function confirmation() {
     global $cinfo, $icode;
+    say($cinfo['sitenum']);
     if ($cinfo['money_code'] > 1) { 
         $cinfo['money_demanded'] = 'More_than_500';
     } else { 
         $cinfo['money_demanded'] = 'Less_than_500';
     }
-    $question = isay($cinfo['site_number'] . "_Money_Demanded_" . $cinfo['money_demanded']);
+    $question = isay($cinfo['sitenum'] . "_Money_Demanded_" . $cinfo['money_demanded']);
     $event = ask($question, array("choices"  => '1,2',
 		           "mode"     => "dtmf",
 			   "bargein"  => true,
