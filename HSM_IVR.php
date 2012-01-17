@@ -100,7 +100,7 @@ function sorry_message ($cinfo, $event) {
 }
 
 function find_site($event) {
-  DBG : _log(print_r($event));
+  _log(print_r($event));
   if(DBG){_log("Currently trying to LOOK UP site info.");}
   $e = $event->value;
   _log("counter " . $cinfo['sv_count']);
