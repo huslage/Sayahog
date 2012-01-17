@@ -110,20 +110,19 @@ function get_siteinfo () {
 				"bargein"     => true,
 				"attempts"    => 3,
 				"onBadChoice" => "byenow"));
+
   $e = $event->value;
     _log("======================== Result: " . $e);
   if (array_key_exists($e,$sites)) {
     _log("Found site " . $e);
-    } else {
+  } else {
     _log("didn't find site: " . $e);
-    get_siteinfo($cinfo, $cfg); // loop back around again, pardner
-   }
-  _log("Event Name " . $event->name); _log(" Value " . $event->value);
-  if ($event->value) {
-    $cinfo['sitenum'] = $event->value; _log("sitenum: " . $cinfo['sitenum']);
-    $cinfo['sitename'] = $sites[$cinfo['sitenum']]['name']; _log("sitename: " . $cinfo['sitename']);
-  } else { get_siteinfo(); }
-  wait(300);
+    get_siteinfo($cinfo); // loop back around again, pardner
+  }
+
+  _log("Event Name " . $event->name); _log(" Value " . $e);
+  $cinfo['sitenum'] == $e; _log("sitenum: " . $cinfo['sitenum']);
+  $cinfo['sitename'] == $sites[$e]['name']; _log("sitename: " . $cinfo['sitename']);
 
   // make sure they have it right by verifying!
   // 1.2 IVRS - Confirm the site number
@@ -138,23 +137,23 @@ function get_siteinfo () {
     if ($vevent->value==1) { 
       $cinfo['site_verified'] = true; if(DBG){say("site verified!");}
     } else {
-      get_siteinfo($cinfo,$cfg);
+      get_siteinfo($cinfo);
     }
   } else {
     _log("received " . $event->name . " and " . $event->value . ". Retrying.");
     $cinfo['sv_count'] += 1;
-    get_siteinfo($cinfo,$cfg);
+    get_siteinfo($cinfo);
   }
 	      
   
-  wait(300); get_itype();
+  wait(300); get_itype($cinfo);
 }
 //
 // end get_siteinfo()
 
 
 // IVRS 2.1 - Type of incident */
-function get_itype () {
+function get_itype ($cinfo) {
   global $cinfo, $icode;
   $prompts = isay("2_1_Options");
   $event = ask($prompts, array("choices"  => '0,1,2,3,4,5,6,7,8,9',
@@ -164,12 +163,12 @@ function get_itype () {
 		       "onBadChoice" => "byenow"));
 $cinfo['icode'] = $event->value;
 _log("Going from get_itype to incident_action");
-  wait(300); incident_action();
+  wait(300); incident_action($cinfo, $icode);
   }
 
 
 // IVRS 2.1.i - Action
-  function incident_action (){
+  function incident_action ($cinfo, $icode){
     global $cinfo, $icode;
     $itype = $cinfo['icode'];
     $cinfo['incident_description'] = $icode[$itype];
@@ -177,12 +176,12 @@ _log("Going from get_itype to incident_action");
       urgent_action(); // TODO: This is section 1.4- we need some audio for it, I think?
     }
     if ($cinfo['icode'] < 9 ) {
-        money_demanded();
+        money_demanded($cinfo, $icode);
     }
 }
 
 // IVRS 3.1 - Money asked/spent
-function money_demanded () {
+function money_demanded ($cinfo, $icode) {
     global $cinfo, $icode;
     $question = isay("3_1_a__if_spent_less_that_500_or_more_than_500");
     $choices = '1,2';
@@ -192,11 +191,11 @@ function money_demanded () {
 			   "attempts" => 3,
 			   "onBadChoice" => "byenow"));
     $cinfo['money_code'] = $event->value;
-    confirmation();
+    confirmation($cinfo, $icode);
 }
 
 // IVRS 1.3 - Summary for Confirmation
-function confirmation() {
+function confirmation($cinfo, $icode) {
     global $cinfo, $icode;
     if ($cinfo['money_code'] > 1) { 
         $cinfo['money_demanded'] = 'More_than_500';
@@ -209,19 +208,19 @@ function confirmation() {
 			   "bargein"  => true,
 			   "attempts" => 3,
 			   "onBadChoice" => "invalid_choice"));
-    capture_or_reset($event);
+    capture_or_reset($cinfo,$event);
 }
 
 // U-turn folks who want another shot
-function capture_or_reset ($event) {
+function capture_or_reset ($cinfo,$event) {
     global $cinfo;
     _log("in capture_or_reset");
     if ($event->value == 1) { 
-        capture_data();
+        capture_data($cinfo);
 	byenow();
     }
     else if ($event == 2) { 
-      get_itype();
+      get_itype($cinfo);
     }
 }
 
@@ -283,9 +282,6 @@ function main ($maint_auth = false) {
 
   // IVR timeouts & such (lots of these are irrelevant)
   $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
-  $opts = array($timeout => 30.0, $attempts => 3, "bargein" => true, "mode" => "dtmf",
-		$interdigitTimout => 8); 
-  $cfg = array('opts' => $opts);
   $cinfo = array();
   $cinfo['caller_number'] = $currentCall->callerID;
   $cinfo['sv_count'] = 0;
@@ -295,7 +291,7 @@ function main ($maint_auth = false) {
     // 0.1 IVRS - Welcome Message
   isay("0_1_Welcome_Message"); wait(100);
   // 1.1 IVRS - Get healthcare center
-  $cinfo = get_siteinfo($cinfo, $cfg);
+  $cinfo = get_siteinfo($cinfo);
   $cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
