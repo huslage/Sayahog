@@ -109,8 +109,8 @@ function get_siteinfo () {
   if ($cinfo['sv_count'] > 2) { invalid_choice(); }
   // put the message together
   // 0.1 IVRS - Welcome Message
-  $question = array(isay("0_1_Welcome_Message",true));
-  $question = array_push(isay("1_1_Enter_4_digit_code_number",true));
+  isay("0_1_Welcome_Message");
+  $question = array(isay("1_1_Enter_4_digit_code_number",true));
   $choices = "[4-DIGITS]";
   _log("The choices - " . $choices);
   $event = ask($question, array("choices"     => $choices,
@@ -303,19 +303,15 @@ function main ($maint_auth = false) {
       ask("",array("choices" => MAINTPW, "timeout" => 120.0, onTimeout => "hangup", "onChoice" => "supers")); 
       _log("Somebody called during maintenance: " . $currentCall->callerID); hangup(); }
   }
-
-  // IVR timeouts & such (lots of these are irrelevant)
-  //$saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
-  //$opts = array($timeout => 30.0, $attempts => 3, "bargein" => true, "mode" => "dtmf",
-  //		$interdigitTimout => 8); 
-  //$cfg = array('opts' => $opts);
+  // kick off everything else!
+  get_siteinfo();
   $cinfo = array();
   $cinfo['caller_number'] = $currentCall->callerID;
   _log("Caller: " . $cinfo['caller_number']);
   $cinfo['network'] = $currentCall->network;
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
     // 1.1 IVRS - Get healthcare center
-  get_siteinfo();
+  
   //$cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
