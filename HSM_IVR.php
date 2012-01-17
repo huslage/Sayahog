@@ -1,6 +1,5 @@
 <?php
 
-
 // debugging messages
 define("DBG", false);
 
