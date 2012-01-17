@@ -320,7 +320,8 @@ function main ($maint_auth = false) {
     // 1.1 IVRS - Get healthcare center
   get_siteinfo($cinfo, $cfg);
   _log("Back in Main");
-  get_itype();
+  hangup();
+  //get_itype();
   //$cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
