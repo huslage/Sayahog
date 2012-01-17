@@ -167,7 +167,7 @@ function get_itype () {
   global $cinfo, $icode;
   $prompts = array(isay("2_1_Listen_Carefully"));
   foreach (range(0,9) as $i) {
-    $prompts = array_push(isay("2_1_Press_" . $i,true)); 
+    $prompts = array_push(isay("2_1_Press_".$i)); 
   }
   //$question = isay("2_1_Press_9",true);
   $event = ask($prompts, array("choices"  => '0,1,2,3,4,5,6,7,8,9',
@@ -264,7 +264,7 @@ function flog ($message) {
 // wrapper for say()- includes the prefix/suffix for the audio files.
 function isay ($message, $rs=false) { // rs is a bool for 'return string'
   $message = (AURL . $message . ATYPE); if (DBG) {_log("isay $message");}
-  if($rs){return $message;} else {say($message);}
+  return $message;
 }
 
 function invalid_choice () {
