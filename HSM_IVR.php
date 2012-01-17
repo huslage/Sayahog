@@ -101,7 +101,7 @@ function sorry_message ($cinfo, $event) {
 }
 
 
-function get_siteinfo () {
+function get_siteinfo ($cinfo, $cfg) {
   global $sites, $cinfo, $icode;
   if(DBG){_log("Currently trying to get site info.");}
   // make sure we boot them if they can't get it after 3 tries
