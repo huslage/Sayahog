@@ -1,5 +1,4 @@
 <?php
-answer();
 
 // debugging messages
 define("DBG", false);
@@ -9,13 +8,6 @@ define("DBG", false);
 define("MAINT", false);
 define("MAINTPW", '8');
 define("MAINT_MSG","The help line is currently undergoing maintenance. Please call again later.",array("voice" => "kate"));
-
-
-// big crazy ball of global variable goo
-$cinfo = array();
-$cinfo['caller_number'] = $currentCall->callerID; _log("Caller: " . $cinfo['caller_number']);
-$cinfo['network'] = $currentCall->network;
-if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
 
 
 // geocode stuff
@@ -85,28 +77,29 @@ $sites['0032'] = array('name'=>'Chil', 'location'=>'25.152229,82.563699', 'phone
 // end decoder ring
 
 
+
 // ask ask ask ask ask ask
-function askaskask($question, $options) {    
-  $result = ask($question, $options); wait(300);
-  return $result;  
-}
+/* function askaskask($question, $options) {     */
+/*   $result = ask($question, $options); wait(300); */
+/*   return $result;   */
+/* } */
 
 
 // IVRS 0.3 - Try again later
-function sorry_message ($cinfo, $event) {
-    if (DBG) {
-      //say("sorry! sending you back to the main menu.");
-      _log("We're in sorry_message, so something has gone horribly wrong!");
-      //      say("Sorry, sending you back to the main menu.");
-      // say("Here was the information we were able to collect"); wait(2000);
-      foreach ($cinfo as $k => $v) {
-	_log("Key named" . $k . " with value " . $v);
-      }
-}
-    _log("IVRS 0.3 - Caller at " . $currentCall->CallerId . " was unable to use the menu :(");
-    //say("ok, sending you back to the main menu!"); 
-    wait(300); main();
-}
+/* function sorry_message ($cinfo, $event) { */
+/*     if (DBG) { */
+/*       //say("sorry! sending you back to the main menu."); */
+/*       _log("We're in sorry_message, so something has gone horribly wrong!"); */
+/*       //      say("Sorry, sending you back to the main menu."); */
+/*       // say("Here was the information we were able to collect"); wait(2000); */
+/*       foreach ($cinfo as $k => $v) { */
+/* 	_log("Key named" . $k . " with value " . $v); */
+/*       } */
+/* } */
+/*     _log("IVRS 0.3 - Caller at " . $currentCall->CallerId . " was unable to use the menu :("); */
+/*     //say("ok, sending you back to the main menu!");  */
+/*     wait(300); main(); */
+/* } */
 
 
 function get_siteinfo () {
@@ -296,6 +289,10 @@ function supers() {
 
 // IVR MAIN
 function main ($maint_auth = false) {
+  global $cinfo;
+  $cinfo['caller_number'] = $currentCall->callerID; _log("Caller: " . $cinfo['caller_number']);
+  $cinfo['network'] = $currentCall->network;
+  if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
   //answer();
   global $cinfo, $sites, $itypes;
   if ($maint_auth) { 
