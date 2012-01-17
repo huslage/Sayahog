@@ -114,7 +114,7 @@ function get_siteinfo () {
 				"attempts"    => 3,
 				"onBadChoice" => "byenow"));
 
-  $e = $event->value;
+  var $e = $event->value;
     _log("======================== Result: " . $e);
   if (array_key_exists($e,$sites)) {
     _log("Found site " . $e);
