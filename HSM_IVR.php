@@ -107,7 +107,7 @@ function get_siteinfo () {
   // make sure we boot them if they can't get it after 3 tries
   if ($cinfo['sv_count'] > 2) { invalid_choice(); }
   // put the message together
-  $question = (isay("1_1_Enter_4_digit_code_number",true));
+  $question = (isay("1_1_Enter_4_digit_code_number"));
   $choices = "[4-DIGITS]";
   _log("The choices - " . $choices);
   $event = ask($question, array("choices"     => $choices,
@@ -119,7 +119,7 @@ function get_siteinfo () {
   if (array_key_exists($e,$sites)) {
     _log("Found site " . $e);
     } else {
-    $cinfo['sv_count']++;
+    $cinfo['sv_count'] += 1;
     _log("didn't find site: " . $e);
     get_siteinfo($cinfo, $cfg); // loop back around again, pardner
    }
@@ -132,11 +132,7 @@ function get_siteinfo () {
 
   // make sure they have it right by verifying!
   // 1.2 IVRS - Confirm the site number
-  $verification_prompt = array(isay("part_1__you_have_entered_the_code_xxxx"));
-  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Code"));
-  $verification_prompt = array_push(isay("part_2__which_corresponds_to"));
-  $verification_prompt = array_push(isay($cinfo['sitenum'] . "_Name")); 
-  $verification_prompt = array_push(isay("part_3__end_of_1st_sentence_and_2nd_sentence_press_1_or_2"));
+  $verification_prompt = isay($cinfo['sitenum'] . "_Verification");
   // ask for sure
   $vevent = ask($verification_prompt, array("choices"     => '1,2', 
 					    "bargein"     => true,
@@ -146,12 +142,12 @@ function get_siteinfo () {
     if ($vevent->value==1) { 
       $cinfo['site_verified'] = true; if(DBG){say("site verified!");}
     } else {
-      $cinfo['sv_count'] + 1;
+      $cinfo['sv_count'] += 1;
       get_siteinfo($cinfo,$cfg);
     }
   } else {
     _log("received " . $event->name . " and " . $event->value . ". Retrying.");
-    $cinfo['sv_count'] + 1;
+    $cinfo['sv_count'] += 1;
     get_siteinfo($cinfo,$cfg);
   }
 	      
@@ -165,11 +161,7 @@ function get_siteinfo () {
 // IVRS 2.1 - Type of incident */
 function get_itype () {
   global $cinfo, $icode;
-  $prompts = array(isay("2_1_Listen_Carefully"));
-  foreach (range(0,9) as $i) {
-    $prompts = array_push(isay("2_1_Press_".$i)); 
-  }
-  //$question = isay("2_1_Press_9",true);
+  $prompts = isay("2_1_Options");
   $event = ask($prompts, array("choices"  => '0,1,2,3,4,5,6,7,8,9',
 		       "bargein"  => true,
 		       "attempts" => 3,
@@ -196,9 +188,7 @@ _log("Going from get_itype to incident_action");
 // IVRS 3.1 - Money asked/spent
 function money_demanded () {
     global $cinfo, $icode;
-    isay("3_1_a__if_spent_less_that_500_or_more_than_500");
-    isay("Less_than_500");
-    $question = isay("More_than_500",true);
+    $question = isay("3_1_a__if_spent_less_that_500_or_more_than_500");
     $choices = '1,2';
     $event = ask($question, array("choices"  => $choices,
 			   "bargein"  => true,
@@ -216,12 +206,9 @@ function confirmation() {
     } else { 
         $cinfo['money_demanded'] = 'Less_than_500';
     }
-    isay("part_1_you");
-    isay($cinfo['site_number'] . "_Name");
-    isay("part_2_name_of_hospital_details");
-    isay($cinfo['money_demanded']);
-    $question = isay("part_3_amount_money",true);
+    $question = isay($cinfo['site_number'] . "_Money_Demanded_" . $cinfo['money_demanded']);
     $event = ask($question, array("choices"  => '1,2',
+        say(isay('Less_than_500'));
 			   "bargein"  => true,
 			   "attempts" => 3,
 			   "onBadChoice" => "invalid_choice"));
