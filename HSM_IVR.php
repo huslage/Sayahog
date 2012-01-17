@@ -111,6 +111,7 @@ function get_siteinfo () {
   $choices = "[4-DIGITS]";
   _log("The choices - " . $choices);
   $event = ask($question, array("choices"     => $choices,
+				"mode"        => "dtmf",
 				"bargein"     => true,
 				"attempts"    => 3,
 				"onBadChoice" => "byenow"));
@@ -140,6 +141,7 @@ function get_siteinfo () {
   // ask for sure
   $vevent = ask($verification_prompt, array("choices"     => '1,2', 
 					    "bargein"     => true,
+					    "mode"        => "dtmf",
 					    "attempts"    => 3,
 					    "onBadChoice" => "byenow"));
   if ($vevent->name=='choice') {
@@ -171,6 +173,7 @@ function get_itype () {
   }
   $event = ask($question, array("choices"  => '0,1,2,3,4,5,6,7,8,9',
 		       "bargein"  => true,
+		       "mode"     => "dtmf",
 		       "attempts" => 3,
 		       "onBadChoice" => "byenow"));
 $cinfo['icode'] = $event->value;
@@ -200,8 +203,9 @@ function money_demanded () {
     $question = array_push(isay("More_than_500",true));
     $choices = '1,2';
     $event = ask($question, array("choices"  => $choices,
-			   "bargein"  => true,
-			   "attempts" => 3,
+			   "bargein"     => true,
+			   "attempts"    => 3,
+			   "mode"        => "dtmf",
 			   "onBadChoice" => "byenow"));
     $cinfo['money_code'] = $event->value;
     confirmation();
@@ -221,8 +225,9 @@ function confirmation() {
     $question = array_push(isay($cinfo['money_demanded']));
     $question = array_push($question = isay("part_3_amount_money",true));
     $event = ask($question, array("choices"  => '1,2',
-			   "bargein"  => true,
-			   "attempts" => 3,
+			   "bargein"     => true,
+			   "attempts"    => 3,
+			   "mode"        => "dtmf",
 			   "onBadChoice" => "invalid_choice"));
     capture_or_reset($event);
 }
@@ -308,7 +313,7 @@ function main ($maint_auth = false) {
   $cinfo['network'] = $currentCall->network;
   if ($currentCall->callerName) {$cinfo['callername'] = $currentCall->callerName;}
     // 1.1 IVRS - Get healthcare center
-  get_siteinfo();
+  get_siteinfo($cinfo, $cfg);
   $cinfo['incident_code']  = get_itype(); $cinfo['incident_type'] = $icode[$cinfo['icode']]; // get the bigger description in there too
 }
 
