@@ -143,7 +143,10 @@ function get_siteinfo ($cinfo, $cfg) {
   // ask for sure
   $vevent = ask($verification_prompt, array("choices"     => '1,2', 
 					    "bargein"     => true,
-					  $e = $event->value;
+     					    "mode"        => "dtmf",
+					    "attempts"    => 3));
+					    //"onBadChoice" => "byenow"));
+  $e = $event->value;
   _log("Event Name " . $event->name); _log(" Value " . $event->value);
 
   if (array_key_exists($e,$sites)) {
@@ -153,9 +156,6 @@ function get_siteinfo ($cinfo, $cfg) {
       _log("didn't find site: " . $e);
       get_siteinfo($cinfo, $cfg); // loop back around again, pardner
   }
-     "mode"        => "dtmf",
-					    "attempts"    => 3));
-					    //"onBadChoice" => "byenow"));
   if ($vevent->value==1) { 
     $cinfo['site_verified'] = true; if(DBG){_log("site verified!");}
   } else {
