@@ -121,7 +121,7 @@ function get_siteinfo ($cinfo, $cfg) {
   if (array_key_exists($e,$sites)) {
       _log("Found site " . $e);
   } else {
-      $cinfo['sv_count']++;
+      $cinfo['sv_count'] += 1;
       _log("didn't find site: " . $e);
       get_siteinfo($cinfo, $cfg); // loop back around again, pardner
   }
@@ -144,7 +144,7 @@ function get_siteinfo ($cinfo, $cfg) {
   if ($vevent->value==1) { 
     $cinfo['site_verified'] = true; if(DBG){say("site verified!");}
   } else {
-    $cinfo['sv_count']++;
+    $cinfo['sv_count'] += 1;
     get_siteinfo($cinfo,$cfg);
   }
 	      
