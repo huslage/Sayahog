@@ -65,10 +65,10 @@ class UshahidiClient
       :task => 'report',
       :incident_title => '',
       :incident_description => report[:incident_description],
-      :incident_date => format_date( Date.new ),
-      :incident_hour => get_the_time[:hours],
-      :incident_minute => get_the_time[:minutes],
-      :incident_ampm => get_the_time[:am_pm],
+      :incident_date => get_date_and_time[:date],
+      :incident_hour => get_date_and_time[:hours],
+      :incident_minute => get_date_and_time[:minutes],
+      :incident_ampm => get_date_and_time[:am_pm],
       :incident_category => '',
       :latitude => report[:latitude],
       :longitude => report[:longitude],
@@ -77,10 +77,14 @@ class UshahidiClient
     }
   end
 
-  def format_date date
-  end
-
-  def get_the_time
+  def get_date_and_time
+    t = Time.new
+    time_hash = { }
+    time_hash[:am_pm]= t.strftime("%P")
+    time_hash[:hours]= t.strftime("%I")
+    time_hash[:minutes]= t.strftime("%M")
+    time_hash[:date]= t.strftime("%m/%d/%Y")
+    time_hash
   end
 
 end
