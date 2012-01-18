@@ -22,7 +22,7 @@ module LocalTesting
   end
 
 
-  $currentCall = CurrentCall.new
+#  $currentCall = CurrentCall.new
 
 
   class Event
@@ -54,11 +54,21 @@ module LocalTesting
     value = case @ask_count
       when 1 then '8'
       when 2 then '0023'
+      when 3 then '1'
+      when 4 then '0'
       else '1'
     end
 
     event = Event.new(value)
-    options[:onChoice].call(event) if options[:onChoice]
+
+    choices = options[:choices].split(',') if options[:choices]
+    if choices
+      if choices.include?(value)
+        options[:onChoice].call(event) if options[:onChoice]
+      else
+        options[:onBadChoice].call(event) if options[:onBadChoice]
+      end
+    end
     event
   end
 
@@ -221,7 +231,7 @@ class Call
             :timeout => 120.0,
             :onTimeout => :hangup,
             :onChoice => lambda {|event| maintenance_authorized!},
-            :onBadChoice => lambda {|event| invalid_choice! }
+            :onBadChoice => lambda {|event| invalid_choice }
           })
       unless @maintenance_authorized
         log("Somebody called during maintenance: #{$currentCall.callerID}" )
