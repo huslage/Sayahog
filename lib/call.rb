@@ -498,9 +498,10 @@ class Call
     lat, lon = lat_lon
     {
       :title => @incident['data'],
-      :category => '',
+      :category => 'Voice Report',
       :latitude => lat,
       :longitude => lon,
+      :description => @incident['data'],
       :location_name => @site['data']['name']
 
     }
