@@ -263,7 +263,7 @@ class Call
 
   # ask user to verify the site number typed in
   def verify_site
-    verification_prompt = isay("#{@site[:id]}_Verification")
+    verification_prompt = isay("#{@site['id']}_Verification")
     event = ask(verification_prompt, {
                   :choices => "1,2",
                   :mode => "dtmf",
@@ -360,24 +360,24 @@ class Call
     end
   end
 
-  def sorry_message(event)
-    if DEBUG
-      say("sorry! sending you back to the main menu")
-      _log("We're in sorry_message, so something has gone horribly wrong!")
-      caller_info.each_pair do |k,v|
-        log("Key named: #{k} with value: #{v}")
-      end
-    end
+  # def sorry_message(event)
+  #   if DEBUG
+  #     say("sorry! sending you back to the main menu")
+  #     _log("We're in sorry_message, so something has gone horribly wrong!")
+  #     caller_info.each_pair do |k,v|
+  #       log("Key named: #{k} with value: #{v}")
+  #     end
+  #   end
 
-    log("IVRS 0.3 - Caller at #{current_info[:caller_number]} was unable to use the menu :(")
-    say("ok, sending you back to the main menu!")
-    wait(300);
-    # TODO somethin shoud be called here, it's main in php
-  end
+  #   log("IVRS 0.3 - Caller at #{current_info['caller_number']} was unable to use the menu :(")
+  #   say("ok, sending you back to the main menu!")
+  #   wait(300);
+  #   # TODO somethin shoud be called here, it's main in php
+  # end
 
   def incident_action!
     log("getting the right action for incident")
-    case @incident[:id]
+    case @incident['id']
     when '0'
       urgent_action
     else
@@ -387,9 +387,9 @@ class Call
 
   def store_incident_code(choice_event)
     @incident ||= {}
-    @incident[:id] = choice_event.value
-    @incident[:data] = INCIDENTS[choice_event.value]
-    log("Incident is: #{@incident[:id]}: #{@incident[:data]}")
+    @incident['id'] = choice_event.value
+    @incident['data'] = INCIDENTS[choice_event.value]
+    log("Incident is: #{@incident['id']}: #{@incident['data']}")
   end
 
   # TODO
