@@ -1,8 +1,7 @@
 require 'net/http'
 
-CONFIG = {
-  :url => 'd3volapi.crowdmap.com/api',
-  :geo_url => 'http://maps.googleapis.com/maps/api/geocode/json',
+USHAHIDI_CONFIG = {
+  :url => 'ec2-50-112-5-172.us-west-2.compute.amazonaws.com/admin',
   :parameters => {
     :required => { },
     :optional => {
@@ -14,8 +13,8 @@ CONFIG = {
   },
   :authentication => {
     :basic_auth => {
-      :user => 'apitests@0xb5.org',
-      :password => 'd3volute!' },
+      :user => 'admin',
+      :password => 'admin' },
   },
 }
 
@@ -47,7 +46,7 @@ class UshahidiClient
   attr_reader :config, :gateway, :url
 
   def initialize
-    @config = CONFIG
+    @config = USHAHIDI_CONFIG
     @gateway = UshahidiGateway.new( config[:authentication][:basic_auth] )
     @url = config[:url]
   end
@@ -69,7 +68,7 @@ class UshahidiClient
       :incident_hour => get_the_time[:hours],
       :incident_minute => get_the_time[:minutes],
       :incident_ampm => get_the_time[:am_pm],
-      :incident_category => '',
+      :incident_category => report[:category],
       :latitude => report[:latitude],
       :longitude => report[:longitude],
       :location_name => '',

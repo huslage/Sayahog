@@ -279,9 +279,23 @@ class Call
 
   # TODO
   def capture_data!
-    byenow!
+    client = UshahidiClient.new
+    client.post_report(report)
+
   end
 
+  def report
+    { 
+      :title => '',
+      :category => '',
+      :latitude => '',
+      :longitude => '',
+      :location_name => ''
+    
+    }
+  end
+  
+  
   def byenow!
     isay("0_2_End_Message_1_Thank_You")
     hangup!
