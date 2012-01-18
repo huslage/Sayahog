@@ -67,7 +67,7 @@ class UshahidiClient
     payload = {
       :task => 'report',
       :incident_title => report[:title],
-      :incident_description => report[:incident_description],
+      :incident_description => report[:description],
       :incident_category => report[:category],
       :incident_date => get_date_and_time[:date],
       :incident_hour => get_date_and_time[:hours],
