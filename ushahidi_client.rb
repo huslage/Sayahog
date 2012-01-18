@@ -1,7 +1,7 @@
-include 'net/http'
+require 'net/http'
 
 CONFIG = {
-  :url => 'https://d3volapi.crowdmap.com/api',
+  :url => 'd3volapi.crowdmap.com/api',
   :geo_url => 'http://maps.googleapis.com/maps/api/geocode/json',
   :parameters => {
     :required => { },
@@ -23,34 +23,20 @@ CONFIG = {
 
 class UshahidiGateway
 
-  attr_reader :credentials
+  attr_reader :user, :password
 
   def initialize(credentials)
-    @credentials = { :user => credentials[:user], :password => credentials[:password] }
+    # @credentials = { :user => credentials[:user], :password => credentials[:password] }
+    @user = credentials[:user]
+    @password = credentials[:password]
   end
-
-  def build_query options
-    "?" + options.map {  |k,v| [k.to_s, v] * '=' } * '&'
-  end
-
-
-
 
   def get url
      raise "implement get method for the Ushahidi gateway"
   end
 
   def post url, payload
-    uri = URI(url + build_query(payload))
-
-    request = Net::HTTP::POST.new(uri.request_uri)
-
-    req.basic_auth *credentials.values
-
-    response = Net::HTTP.start(uri.hostname, uri.port ) do |http|
-      http.request(request)
-    end
-
+    response = Net::HTTP.post_form(URI.parse("http://#{user}:#{password}@" + url), payload )
     response.body
   end
 
@@ -78,14 +64,14 @@ class UshahidiClient
       #  :multipart => true,
       :task => 'report',
       :incident_title => '',
-      :incident_description => report,
+      :incident_description => report[:incident_description],
       :incident_date => format_date( Date.new ),
       :incident_hour => get_the_time[:hours],
       :incident_minute => get_the_time[:minutes],
       :incident_ampm => get_the_time[:am_pm],
       :incident_category => '',
-      :latitude => geolocation[:latitude],
-      :longitude => geolocation[:longitude],
+      :latitude => report[:latitude],
+      :longitude => report[:longitude],
       :location_name => '',
       # 'incident_photo[]' => File.new('/Users/amantini/Desktop/werner.jpg', 'rb')
     }
@@ -95,9 +81,6 @@ class UshahidiClient
   end
 
   def get_the_time
-  end
-
-  def geolocation
   end
 
 end
