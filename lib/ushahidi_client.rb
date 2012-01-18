@@ -18,8 +18,6 @@ USHAHIDI_CONFIG = {
   },
 }
 
-
-
 class UshahidiGateway
 
   attr_reader :user, :password

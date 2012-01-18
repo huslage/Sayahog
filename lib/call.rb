@@ -109,6 +109,10 @@ module LocalTesting
       "CallerName"
     end
 
+    def isActive
+      true
+    end
+
   end
 
 
@@ -146,7 +150,7 @@ module LocalTesting
       when 2 then '0023'
       when 3 then '1'
       when 4 then '2'
-      else 'foo'
+      else '1'
     end
 
     puts "value is #{value}"
@@ -175,8 +179,16 @@ module LocalTesting
     puts "say #{what}"
   end
 
+  def call(where)
+    puts "calls #{where}"
+  end
+
   def redirect(where)
-    puts "redirect #{where}"
+    puts "redirects #{where}"
+  end
+
+  def transfer(where)
+    puts "transfers #{where}"
   end
 
   def log(what)
@@ -414,7 +426,7 @@ class Call
   # attention, the specs defined this to send a report for callback, instead we want to redirect
   def urgent_action
     phone = @site['data']['phone']
-    redirect(phone)
+    transfer(phone, {:answerOnMedia => true})
   end
 
   # section 1.3 in the specs
@@ -510,7 +522,7 @@ class Call
   def lat_lon
     @site['data']['location'].split(',')
   end
-  
+
   def byenow!
     say(isay("0_2_End_Message_1_Thank_You"))
     capture_data!
@@ -545,4 +557,4 @@ class Call
 
 end
 
-#Call.new.run
+Call.new.run
