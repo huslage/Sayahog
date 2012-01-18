@@ -1,3 +1,5 @@
+require 'hashie/mash'
+
 class Call
 
   attr_accessor :caller_info
@@ -19,7 +21,7 @@ class Call
 
   #SHOULDNT: it be an instance variable in ruby
 
-  INCIDENT_CODE = {
+  INCIDENT_CODE = Hashie::Mash.new({
     '1' => 'Health worker asked for bribe to admit you or treat you in hospital.',
     '2' => 'You were asked to pay money after delivery.',
     '3' => 'You were asked to pay for drugs, blood, tests, etc.',
@@ -30,13 +32,13 @@ class Call
     '8' => 'Were asked to pay for or not provided with food during your stay in the JSSK hospitals.',
     '9' => 'Were not provided with free drop back facility from JSSK hospitals.',
     '0' => 'This is a situation which might result in death of the woman/child and no action is being taken by the staff.',
-  }
+  })
 
 
   # secret decoder ring for health facilities
   # site number (key): site, location, phone
   # these sites are in the Azamgar District
-  SITES = {
+  SITES = Hashie::Mash.new({
     '0001' => {'name'=>'Azamgarh Sadar Mahila Hospital', 'location'=>'26.063777,83.183628', 'phone'=>'+919451113651', 'district' => 'Azamgarh_Zila_District'},
     '0002' => {'name'=>'Phoolpur', 'location'=>'26.044017,82.520839', 'phone'=>'+919451113651', 'district' => 'Azamgarh_Zila_District'},
     '0003' => {'name'=>'Lalganj', 'location'=>'25.450143,82.59002', 'phone'=>'+919451113651', 'district' => 'Azamgarh_Zila_District'},
@@ -70,7 +72,7 @@ class Call
     '0030' => {'name'=>'Vijaypur', 'location'=>'25.073399,82.378023', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'},
     '0031' => {'name'=>'Jamalpur', 'location'=>'25.09245,83.052788', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'},
     '0032' => {'name'=>'Chil', 'location'=>'25.152229,82.563699', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'}
-  }
+  })
   # end decoder ring
 
   ##    $cinfo = array();
@@ -81,11 +83,11 @@ class Call
   def initialize
     @maintainance_authorized = false
     @caller_info = {}
-    @ask_default_options = {
+    @ask_default_options = Hashie::Mash.new({
       :mode => 'dtmf',
       :bargein => true,
       :attempts => 3,
-      :onBadChoice => "byenow" }
+      :onBadChoice => "byenow" })
   end
 
   def run( maintainance_authorized = false )
@@ -219,8 +221,10 @@ class Call
     end
   end
 
+  # TODO urgent action
   def urgent_action
-    log("URGENT ACTION NOT YET IMPLEMENTED")
+    phone = @site[:data][:phone] 
+    redirect(phone)
   end
 
   def money_demanded
