@@ -229,7 +229,7 @@ class Call
     '0' => 'This is a situation which might result in death of the woman/child and no action is being taken by the staff.',
   }
 
-  MONEY_CODES = {'1' => 'More_than_500', '2' => 'Less_than_500'}
+  MONEY_CODES = {'2' => 'More_than_500', '1' => 'Less_than_500'}
 
   # secret decoder ring for health facilities
   # site number (key): site, location, phone
