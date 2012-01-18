@@ -114,9 +114,6 @@ class Call
     #  caller_info[:incident_type] = INCIDENT[ caller_info[:icode] ]
     #  caller_info[ ] = get_site_info()
 
-    # we were told this is a leftover
-    ## $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
-
     get_incident_code_and_type!
 
     get_incident_action
