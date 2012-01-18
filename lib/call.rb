@@ -207,7 +207,7 @@ end
 
 class Call
 
-#  include LocalTesting
+  # include LocalTesting
 
   attr_accessor :caller_info
 
@@ -510,7 +510,7 @@ class Call
     lat, lon = lat_lon
     {
       :title => @incident['data'],
-      :category => 'Voice Report',
+      :category => '1',
       :latitude => lat,
       :longitude => lon,
       :description => @incident['data'],
