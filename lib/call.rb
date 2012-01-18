@@ -99,8 +99,6 @@ class Call
       hangup()
     end
 
-    # something with "saybye" lambda
-    $saybye = lambda { |event| isay "0_2_End_Message_1_Thank_You" }
 
     @caller_info = { }
 
@@ -120,13 +118,9 @@ class Call
 
     caller_info[ ] = get_site_info()
 
-
-
-
-    caller_info[:incident_code] = get_incident_type()
-
-    caller_info[:incident_type] = INCIDENT_CODE[ caller_info[:icode] ]
-
+    get_incident_code_and_type!
+    
+    
     #   report = build_report caller_info
 
 
@@ -159,20 +153,30 @@ class Call
 
     choices = "[4-DIGITS]"
 
-    event = ask( question, )
-
+    event = ask( question )
 
 
   end
+  
+  
+  
 
-  def get_incident_type
-
-
+  def get_incident_code_and_type!
+    prompts = isay("2_1_Options")
+    event = ask(prompts, :choices => '0,1,2,3,4,5,6,7,8,9',
+                :mode => 'dtmf',
+                :bargein => true,
+                :attempts => 3,
+                :onBadChoice => "byenow")
+    caller_info[:incident_code] = event.value
+    caller_info[:incident_type] = INCIDENT_CODE[ caller_info[:incident_code] ]
+    log("get_incident_type -> incident_action")
+    wait(300)
+    # TODO call incident action after this method
   end
 
   def byenow
-
-
+    
   end
 
 
