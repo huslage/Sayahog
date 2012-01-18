@@ -79,48 +79,31 @@ class Call
 
 
   def initialize
-
+    @maintainance_authorized = false
+    @caller_info = {}
   end
 
   def run( maintainance_authorized = false )
 
     answer()
 
-    if maintainance_authorized
-      say "Maintenance mode entered. Warning, Hull breach imminent!"
-
-    elsif MAINTENANCE
-
-      say *MAINTENANCE_MESSAGE
-      ask("", {
-            :choices => MAINTENANCE_PASSWORD, :mode => "dtmf", :timeout => 120.0,
-            :onTimeout => :hangup, :onChoice => supervisor, })
-      log("Somebody called during maintenance: " + $currentCall.callerID )
-      hangup()
-    end
+    # hangup if maintenance mode is active but not authorized
+    authorize_maintainance_mode if MAINTENANCE
 
     # something with "saybye" lambda
-    $saybye = lambda { |event| isay "0_2_End_Message_1_Thank_You" }
+    # $saybye = lambda { |event| isay "0_2_End_Message_1_Thank_You" }
 
-    @caller_info = { }
 
-    caller_info[:caller_number] = $currentCall.callerID
-
-    caller_info[:retries] = 0
-
-    log( "Caller: " + caller_info[:caller_number] )
-
-    caller_info[:network] = $currentCall.network
-
-    caller_info[:caller_name] = $currentCall.callerName if $currentCall.callerName
+    # store basic caller information (name, number, set retries to 0)
+    store_initial_caller_info
 
     isay "0_1_Welcome_Message"
 
     wait(100)
 
-    caller_info[ ] = get_site_info()
+    get_site_info
 
-
+    #  caller_info[ ] = get_site_info()
 
 
     caller_info[:incident_code] = get_incident_type()
@@ -128,7 +111,6 @@ class Call
     caller_info[:incident_type] = INCIDENT_CODE[ caller_info[:icode] ]
 
     #   report = build_report caller_info
-
 
 
   end
@@ -142,6 +124,22 @@ class Call
   supervisor = lambda do
     # @maintenance_authorized = true
     run( true ) # @maintenance_authorized )
+  end
+
+
+  def authorize_maintainance_mode
+    unless @maintainance_authorized
+      say *MAINTENANCE_MESSAGE
+      ask("", {
+            :choices => MAINTENANCE_PASSWORD,
+            :mode => "dtmf",
+            :timeout => 120.0,
+            :onTimeout => :hangup,
+            :onChoice => lambda {|event| maintenance_authorized!}
+          })
+      log("Somebody called during maintenance: #{$currentCall.callerID}" )
+      hangup()
+    end
   end
 
 
@@ -159,10 +157,16 @@ class Call
 
     choices = "[4-DIGITS]"
 
-    event = ask( question, )
+    event = ask( question,)
 
+  end
 
-
+  def store_initial_caller_info
+    caller_info[:caller_number] = $currentCall.callerID
+    caller_info[:retries] = 0
+    caller_info[:network] = $currentCall.network
+    caller_info[:caller_name] = $currentCall.callerName if $currentCall.callerName
+    log( "Caller: " + caller_info[:caller_number] )
   end
 
   def get_incident_type
@@ -175,12 +179,13 @@ class Call
 
   end
 
+  def maintenance_authorized!
+    @maintenance_authorized = true
+    say "Maintenance mode entered. Warning, Hull breach imminent!"
+  end
+
 
 end
 
 
-
-
-def main
-  Call.new.run
-end
+Call.new.run
