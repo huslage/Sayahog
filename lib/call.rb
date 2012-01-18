@@ -213,13 +213,6 @@ class Call
   # section 1.4 in the specs
   # attention, the specs defined this to send a report for callback, instead we want to redirect
   def urgent_action
-    kick_out_after_too_many_retries_for!(:urgent_action)
-    options = @ask_default_options.merge(:choices => "1,2",
-                                         :onChoice => lambda {|event| redirect_to_emergency_phone_for_site!},
-                                         :onBadChoice => lambda { |event| urgent_action })
-  end
-
-  def redirect_to_emergency_phone_for_site!
     phone = @site['data']['phone']
     redirect(phone)
   end
