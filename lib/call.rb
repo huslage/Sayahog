@@ -32,6 +32,7 @@ class Call
     '0' => 'This is a situation which might result in death of the woman/child and no action is being taken by the staff.',
   }
 
+  MONEY_CODES = {'1' => 'More_than_500', '2' => 'Less_than_500'}
 
   # secret decoder ring for health facilities
   # site number (key): site, location, phone
@@ -220,19 +221,31 @@ class Call
   # section 1.3 in the specs
   def money_demanded
     question = isay("3_1_a__if_spent_less_that_500_or_more_than_500")
-    choices = "1,2"
-    options = @ask_default_options.merge(:choices => "1,2")
+    options = @ask_default_options.merge(:choices => "1,2",
+                                         :onChoice => lambda { |event| store_money_code_and_ask_for_details },
+                                         :onBadChoice => lambda { |event| money_demanded })
     event = ask(question, options)
     caller_info['money_code'] = event.value
     confirmation!
   end
 
-  def confirmation
-    say(@site['id'])
-    caller_info['money_demanded'] = caller_info['money_code'] > 1 ? 'More_than_500' : 'Less_than_500'
-    question = isay(@site['id']+"_Money_Demanded_"+caller_info['money_demanded'])
-    event = ask(question, @ask_default_options.merge(:choices => '1,2'))
-    capture_or_reset(event)
+  def store_and_confirm_money_code(event)
+    @money_code = event.value
+    question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
+    event = ask(question, @ask_default_options.merge(:choices => '1,2',
+                                                     :onBadChoice => lambda {|event| store_and_confirm_money_code},
+                                                     :onChoice => lambda { |event| confirm_money_code(event) }))
+  end
+
+  def confirm_money_code(event)
+    if event.value == "1"
+      log("User confirmed amount of money")
+      byenow
+    else
+      reset_retry_counts
+      # send back to choose incident code
+      get_incident_code_and_type!
+    end
   end
 
   def sorry_message(event)
@@ -267,16 +280,6 @@ class Call
     log("Incident is: #{@incident[:id]}: #{@incident[:data]}")
   end
 
-  def capture_or_reset(event)
-    log("capture or reset")
-    case event.value
-      when "1"
-      capture_data!
-      when "2"
-      get_incident_code_and_type!
-    end
-  end
-
   # TODO
   def capture_data!
     byenow!
@@ -301,6 +304,11 @@ class Call
     invalid_choice if @retries[action] > 2
     @retries[action] += 1
     log("=========================== Count: #{@retries[action]}")
+  end
+
+  def reset_retry_counts
+    @retries.each_pair{|k,v| @retries[k] = 0}
+
   end
 
   def invalid_choice
