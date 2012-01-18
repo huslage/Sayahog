@@ -87,7 +87,7 @@ class Call
       :mode => 'dtmf',
       :bargein => true,
       :attempts => 3,
-      :onBadChoice => lambda { |event| byenow }
+      :onBadChoice => lambda { |event| byenow! }
     }
   end
 
@@ -162,7 +162,7 @@ class Call
                   :mode => "dtmf",
                   :bargein => true,
                   :attempts => 3,
-                  :onBadChoice => lambda {|event| byenow }
+                  :onBadChoice => lambda {|event| byenow! }
                 })
     if event.name == 'choice'
       if event.value == "1"
@@ -240,7 +240,7 @@ class Call
   def confirm_money_code(event)
     if event.value == "1"
       log("User confirmed amount of money")
-      byenow
+      byenow!
     else
       reset_retry_counts
       # send back to choose incident code
@@ -257,7 +257,7 @@ class Call
       end
     end
 
-    log("IVRS 0.3 - CAller at #{current_info[:caller_number]} was unable to use the menu :(")
+    log("IVRS 0.3 - Caller at #{current_info[:caller_number]} was unable to use the menu :(")
     say("ok, sending you back to the main menu!")
     wait(300);
     # TODO somethin shoud be called here, it's main in php
@@ -282,11 +282,12 @@ class Call
 
   # TODO
   def capture_data!
-    byenow!
+    # TODO
   end
 
   def byenow!
     isay("0_2_End_Message_1_Thank_You")
+    capture_data!
     hangup!
   end
 
@@ -312,7 +313,8 @@ class Call
   end
 
   def invalid_choice
-    raise "invalid choice is not yet implemented"
+    isay("0_3_End_Message_2_Not_entered_a_valid_choice")
+    hangup!
   end
 
 
