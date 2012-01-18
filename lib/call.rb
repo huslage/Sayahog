@@ -204,23 +204,23 @@ class Call
     authorize_maintainance_mode if MAINTENANCE_MODE
 
     # store basic caller information (name, number, set retries to 0)
-    store_initial_caller_info
+    store_initial_caller_info unless @hungup
 
-    say(isay "0_1_Welcome_Message")
+    say(isay "0_1_Welcome_Message") unless @hungup
 
-    wait(100)
+    wait(100) unless @hungup
 
     # retries getting the site till successful, or kicks out the user after too many retries
     # after it ran successfully we have a @site instance variable with the chosen site
-    get_site_info
+    get_site_info unless @hungup
 
     # gets current incident code
     # stores the incident action, or kicks out after several retries
-    get_incident_code_and_type!
+    get_incident_code_and_type! unless @hungup
 
     # either asks for the amount of money
     # or in emergency sends report to call the number
-    incident_action!
+    incident_action! unless @hungup
 
     # report = build_report caller_info
   end
@@ -408,6 +408,7 @@ class Call
   end
 
   def hangup!
+    @hungup = true
     hangup
   end
 
