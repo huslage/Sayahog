@@ -19,7 +19,7 @@ class Call
 
   #SHOULDNT: it be an instance variable in ruby
 
-  INCIDENT_CODE = {
+  INCIDENT = {
     '1' => 'Health worker asked for bribe to admit you or treat you in hospital.',
     '2' => 'You were asked to pay money after delivery.',
     '3' => 'You were asked to pay for drugs, blood, tests, etc.',
@@ -85,7 +85,8 @@ class Call
       :mode => 'dtmf',
       :bargein => true,
       :attempts => 3,
-      :onBadChoice => "byenow" }
+      :onBadChoice => lambda { |event| byenow }
+    }
   end
 
   def run( maintainance_authorized = false )
@@ -109,13 +110,15 @@ class Call
     # TODO: DEPRECATED, BUT CHECK THAT NOTHING IS MISSING IN OUR CODE
     #  caller_info[ ] = get_site_info()
     #  caller_info[:incident_code] = get_incident_type()
-    #  caller_info[:incident_type] = INCIDENT_CODE[ caller_info[:icode] ]
+    #  caller_info[:incident_type] = INCIDENT[ caller_info[:icode] ]
     #  caller_info[ ] = get_site_info()
 
     # we were told this is a leftover
     ## $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
 
     get_incident_code_and_type!
+
+    get_incident_action
 
     # report = build_report caller_info
 
@@ -143,7 +146,25 @@ class Call
   end
 
 
-  def check_store_and_verify_site_or_retry(choice_event)
+  def get_site_info
+
+    log "Currently trying to get site info." if DEBUG
+
+    kick_out_after_too_many_retries_for(:get_site_info)
+
+    question = isay("1_1_Enter_4_digit_code_number")
+
+    event = ask(question, {
+                :choices => "[4-DIGITS]",
+                :mode => "dtmf",
+                :bargein => true,
+                :attempts => 3,
+                :onBadChoice => lambda {|event| byenow },
+                :onChoice => lambda {|event| check_store_and_verify_site_or_retry(event) }
+                })
+  end
+
+  def check_store_and_verify_site_or_retry(choice_event, retries)
     log("=========================== Result: #{choice_event.value} (event type: #{event.name})")
     if SITES[choice_event.value]
       @site = {:id => choice_event.value, :data => SITES[choice_event.value] }
@@ -199,24 +220,12 @@ class Call
                 })
   end
 
-
   def store_initial_caller_info
     caller_info['caller_number'] = $currentCall.callerID
     caller_info['retries'] = 0
     caller_info['network'] = $currentCall.network
     caller_info['caller_name'] = $currentCall.callerName if $currentCall.callerName
     log( "Caller: " + caller_info['caller_number'] )
-  end
-
-  def incident_action
-    # FIXME this is already available?
-    caller_info['incident description'] = INCIDENT_CODE[caller_info['incident_code']]
-    case caller_info['icode']
-    when 0
-      urgent_action
-    when 1
-      money_demanded
-    end
   end
 
   # TODO urgent action
@@ -233,7 +242,7 @@ class Call
     caller_info['money_code'] = event.value
     confirmation!
   end
-  
+
   def confirmation
     say(@site['id'])
     caller_info['money_demanded'] = caller_info['money_code'] > 1 ? 'More_than_500' : 'Less_than_500'
@@ -241,11 +250,7 @@ class Call
     event = ask(question, @ask_default_options.merge(:choices => '1,2'))
     capture_or_reset(event)
   end
-  
-  # TODO event.value returns a string
-  
-  
-  
+
   def sorry_message(event)
     if DEBUG
       say("sorry! sending you back to the main menu")
@@ -254,7 +259,7 @@ class Call
         log("Key named: #{k} with value: #{v}")
       end
     end
-    
+
     log("IVRS 0.3 - CAller at #{current_info[:caller_number]} was unable to use the menu :(")
     say("ok, sending you back to the main menu!")
     wait(300);
@@ -264,13 +269,28 @@ class Call
   
   def get_incident_code_and_type!
     prompts = isay("2_1_Options")
-    options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9' )
+    options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9',
+                                         :onChoice => lambda {|event| store_incident_code(event) ; wait(300)})
     event = ask(prompts, options)
-    caller_info['incident_code'] = event.value
-    caller_info['incident_type'] = INCIDENT_CODE[ caller_info['incident_code'] ]
-    log("get_incident_type -> incident_action")
-    wait(300)
-    # TODO call incident action after this method
+  end
+  
+  def get_incident_action
+    log("getting the right action for incident")
+    case @incident[:id]
+    when '0'
+      urgent_action
+    when '9'
+      # nothing
+    else
+      money_demanded
+    end
+  end
+
+  def store_incident_code(choice_event)
+    @incident ||= {}
+    @incident[:id] = choice_event.value
+    @incident[:data] = INCIDENTS[choice_event.value]
+    log("Incident is: #{@incident[:id]}: #{@incident[:data]}")
   end
 
   def capture_or_reset(event)
@@ -300,6 +320,12 @@ class Call
   def maintenance_authorized!
     @maintenance_authorized = true
     say "Maintenance mode entered. Warning, Hull breach imminent!"
+  end
+
+  def kick_out_after_too_many_retries_for(action)
+    invalid_choice if @retries[:get_site_info] > 2
+    @get_site_info_retries += 1
+    log("=========================== Count: #{@get_site_info_retries}")
   end
 
   def invalid_choice
