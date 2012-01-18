@@ -79,51 +79,38 @@ class Call
 
 
   def initialize
-
+    @maintainance_authorized = false
+    @caller_info = {}
   end
 
   def run( maintainance_authorized = false )
 
     answer()
 
-    if maintainance_authorized
-      say "Maintenance mode entered. Warning, Hull breach imminent!"
+    # hangup if maintenance mode is active but not authorized
+    authorize_maintainance_mode if MAINTENANCE
 
-    elsif MAINTENANCE
-
-      say *MAINTENANCE_MESSAGE
-      ask("", {
-            :choices => MAINTENANCE_PASSWORD, :mode => "dtmf", :timeout => 120.0,
-            :onTimeout => :hangup, :onChoice => supervisor, })
-      log("Somebody called during maintenance: " + $currentCall.callerID )
-      hangup()
-    end
-
-
-    @caller_info = { }
-
-    caller_info[:caller_number] = $currentCall.callerID
-
-    caller_info[:retries] = 0
-
-    log( "Caller: " + caller_info[:caller_number] )
-
-    caller_info[:network] = $currentCall.network
-
-    caller_info[:caller_name] = $currentCall.callerName if $currentCall.callerName
+    # store basic caller information (name, number, set retries to 0)
+    store_initial_caller_info
 
     isay "0_1_Welcome_Message"
 
     wait(100)
 
-    caller_info[ ] = get_site_info()
+    get_site_info
+
+    # TODO: DEPRECATED, BUT CHECK THAT NOTHING IS MISSING IN OUR CODE
+    #  caller_info[ ] = get_site_info()
+    #  caller_info[:incident_code] = get_incident_type()
+    #  caller_info[:incident_type] = INCIDENT_CODE[ caller_info[:icode] ]
+    #  caller_info[ ] = get_site_info()
+
+    # we were told this is a leftover
+    ## $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
 
     get_incident_code_and_type!
-    
-    
-    #   report = build_report caller_info
 
-
+    # report = build_report caller_info
 
   end
 
@@ -133,9 +120,20 @@ class Call
     AUDIO_URL + msg + AUDIO_TYPE
   end
 
-  supervisor = lambda do
-    # @maintenance_authorized = true
-    run( true ) # @maintenance_authorized )
+
+  def authorize_maintainance_mode
+    unless @maintainance_authorized
+      say *MAINTENANCE_MESSAGE
+      ask("", {
+            :choices => MAINTENANCE_PASSWORD,
+            :mode => "dtmf",
+            :timeout => 120.0,
+            :onTimeout => :hangup,
+            :onChoice => lambda {|event| maintenance_authorized!}
+          })
+      log("Somebody called during maintenance: #{$currentCall.callerID}" )
+      hangup()
+    end
   end
 
 
@@ -155,11 +153,18 @@ class Call
 
     event = ask( question )
 
-
   end
-  
-  
-  
+
+  def store_initial_caller_info
+    caller_info[:caller_number] = $currentCall.callerID
+    caller_info[:retries] = 0
+    caller_info[:network] = $currentCall.network
+    caller_info[:caller_name] = $currentCall.callerName if $currentCall.callerName
+    log( "Caller: " + caller_info[:caller_number] )
+  end
+
+
+
 
   def get_incident_code_and_type!
     prompts = isay("2_1_Options")
@@ -175,18 +180,39 @@ class Call
     # TODO call incident action after this method
   end
 
-  def byenow
+  
+  def capture_or_reset(event)
+    log("capture or reset")
+    case event.value
+      when 1
+      capture_data!
+      when 2
+      get_incident_code_and_type!
+    end 
+  end
+  
+  # TODO
+  def capture_data!
+    byenow!
+  end
+  
+  def byenow!
     isay("0_2_End_Message_1_Thank_You")
     hangup!
   end
 
+  def hangup!
+    hangup
+  end
   
-  
+
+  def maintenance_authorized!
+    @maintenance_authorized = true
+    say "Maintenance mode entered. Warning, Hull breach imminent!"
+  end
+
+
 end
 
 
-
-
-def main
-  Call.new.run
-end
+Call.new.run
