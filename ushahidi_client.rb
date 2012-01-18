@@ -64,14 +64,14 @@ class UshahidiClient
       #  :multipart => true,
       :task => 'report',
       :incident_title => '',
-      :incident_description => report,
+      :incident_description => report[:incident_description],
       :incident_date => format_date( Date.new ),
       :incident_hour => get_the_time[:hours],
       :incident_minute => get_the_time[:minutes],
       :incident_ampm => get_the_time[:am_pm],
       :incident_category => '',
-      :latitude => geolocation[:latitude],
-      :longitude => geolocation[:longitude],
+      :latitude => report[:latitude],
+      :longitude => report[:longitude],
       :location_name => '',
       # 'incident_photo[]' => File.new('/Users/amantini/Desktop/werner.jpg', 'rb')
     }
@@ -81,9 +81,6 @@ class UshahidiClient
   end
 
   def get_the_time
-  end
-
-  def geolocation
   end
 
 end
