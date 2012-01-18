@@ -81,6 +81,10 @@ class Call
   def initialize
     @maintainance_authorized = false
     @caller_info = {}
+    @ask_default_options = { :mode => 'dtmf',
+                :bargein => true,
+                :attempts => 3,
+                :onBadChoice => "byenow" }
   end
 
   def run( maintainance_authorized = false )
@@ -163,16 +167,35 @@ class Call
     log( "Caller: " + caller_info[:caller_number] )
   end
 
+  def incident_action
+    # FIXME this is already available?
+    caller_info['incident description'] = INCIDENT_CODE[caller_info['incident_code']]
+    case caller_info['icode']
+    when 0
+      urgent_action
+    when 1
+      money_demanded
+    end      
+  end
 
-
-
+  def urgent_action
+    log("URGENT ACTION NOT YET IMPLEMENTED")
+  end
+  
+  def money_demanded
+    question = isay("3_1_a__if_spent_less_that_500_or_more_than_500")
+    choices = "1,2"
+    options = @ask_default_options.merge(:choices => "1,2")
+    event = ask(question, options)
+  end
+  
+  
+  
+  
   def get_incident_code_and_type!
     prompts = isay("2_1_Options")
-    event = ask(prompts, :choices => '0,1,2,3,4,5,6,7,8,9',
-                :mode => 'dtmf',
-                :bargein => true,
-                :attempts => 3,
-                :onBadChoice => "byenow")
+    options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9' )
+    event = ask(prompts, options)
     caller_info[:incident_code] = event.value
     caller_info[:incident_type] = INCIDENT_CODE[ caller_info[:incident_code] ]
     log("get_incident_type -> incident_action")
