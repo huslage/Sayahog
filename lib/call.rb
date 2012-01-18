@@ -148,7 +148,25 @@ class Call
   end
 
 
-  def check_store_and_verify_site_or_retry(choice_event)
+  def get_site_info
+
+    log "Currently trying to get site info." if DEBUG
+
+    kick_out_after_too_many_retries_for(:get_site_info)
+
+    question = isay("1_1_Enter_4_digit_code_number")
+
+    event = ask(question, {
+                :choices => "[4-DIGITS]",
+                :mode => "dtmf",
+                :bargein => true,
+                :attempts => 3,
+                :onBadChoice => lambda {|event| byenow },
+                :onChoice => lambda {|event| check_store_and_verify_site_or_retry(event) }
+                })
+  end
+
+  def check_store_and_verify_site_or_retry(choice_event, retries)
     log("=========================== Result: #{choice_event.value} (event type: #{event.name})")
     if SITES[choice_event.value]
       @site = {:id => choice_event.value, :data => SITES[choice_event.value] }
@@ -182,28 +200,13 @@ class Call
     end
   end
 
-  def get_site_info
 
-    log "Currently trying to get site info." if DEBUG
-
-    invalid_choice if caller_info[:retries] > 2
-
-    caller_info[:retries] += 1
-
-    log("=========================== Count: #{caller_info[:retries]}}" )
-
-    question = isay("1_1_Enter_4_digit_code_number")
-
-    event = ask(question, {
-                :choices => "[4-DIGITS]",
-                :mode => "dtmf",
-                :bargein => true,
-                :attempts => 3,
-                :onBadChoice => lambda {|event| byenow },
-                :onChoice => lambda {|event| check_store_and_verify_site_or_retry(event) }
-                })
+  def get_incident_code_and_type!
+    prompts = isay("2_1_Options")
+    options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9',
+                                         :onChoice => lambda {|event| store_incident_code(event) ; wait(300)})
+    event = ask(prompts, options)
   end
-
 
   def store_initial_caller_info
     caller_info[:caller_number] = $currentCall.callerID
@@ -249,14 +252,6 @@ class Call
     say("ok, sending you back to the main menu!")
     wait(300);
     # TODO somethin shoud be called here, it's main in php
-  end
-
-
-  def get_incident_code_and_type!
-    prompts = isay("2_1_Options")
-    options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9',
-                                         :onChoice => lambda {|event| store_incident_code(event) ; wait(300)})
-    event = ask(prompts, options)
   end
 
   def get_incident_action
@@ -305,6 +300,12 @@ class Call
   def maintenance_authorized!
     @maintenance_authorized = true
     say "Maintenance mode entered. Warning, Hull breach imminent!"
+  end
+
+  def kick_out_after_too_many_retries_for(action)
+    invalid_choice if @retries[:get_site_info] > 2
+    @get_site_info_retries += 1
+    log("=========================== Count: #{@get_site_info_retries}")
   end
 
   def invalid_choice
