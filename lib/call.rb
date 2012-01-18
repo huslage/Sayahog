@@ -490,7 +490,8 @@ class Call
   def capture_data!
     client = UshahidiClient.new
     log("about to post report #{report} using #{client}")
-    client.post_report(report)
+    res = client.post_report(report)
+    log("got this response from ushahidi: #{res}")
   end
 
   def report
