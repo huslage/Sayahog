@@ -1,5 +1,7 @@
+include 'net/http'
+
 CONFIG = {
-  :url => 'https://d3volapi.crowdmap.com/api/',
+  :url => 'https://d3volapi.crowdmap.com/api',
   :geo_url => 'http://maps.googleapis.com/maps/api/geocode/json',
   :parameters => {
     :required => { },
@@ -27,27 +29,29 @@ class UshahidiGateway
     @credentials = { :user => credentials[:user], :password => credentials[:password] }
   end
 
-  def build_request_hash( url, options, payload = nil )
-
-    request_hash = {
-      :url => url,
-      :headers => {
-        :params => options,
-        :accept => :json,
-        :content_type => :json
-      },
-    }
-    request_hash.merge!( credentials)
-    request_hash.merge!( :payload => payload ) if payload
-    request_hash
+  def build_query options
+    "?" + options.map {  |k,v| [k.to_s, v] * '=' } * '&'
   end
 
-  def get url, options
-    RestClient::Request.new( build_request_hash(url, options).merge( :method => :get ) ).execute
+
+
+
+  def get url
+     raise "implement get method for the Ushahidi gateway"
   end
 
-  def post url, options={ }, payload=nil
-    RestClient::Request.new( build_request_hash(url, options, payload).merge( :method => :post ) ).execute
+  def post url, payload
+    uri = URI(url + build_query(payload))
+
+    request = Net::HTTP::POST.new(uri.request_uri)
+
+    req.basic_auth *credentials.values
+
+    response = Net::HTTP.start(uri.hostname, uri.port ) do |http|
+      http.request(request)
+    end
+
+    response.body
   end
 
 end
@@ -64,12 +68,12 @@ class UshahidiClient
 
 
   def post_report report
-    gateway.post( url, { }, fill_in_arguments(report) )
+    gateway.post( url, build_options_from(report) )
   end
 
   private
 
-  def fill_in_arguments report
+  def build_options_from report
     payload = {
       #  :multipart => true,
       :task => 'report',
