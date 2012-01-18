@@ -1,7 +1,7 @@
-include 'net/http'
+require 'net/http'
 
 CONFIG = {
-  :url => 'https://d3volapi.crowdmap.com/api',
+  :url => 'd3volapi.crowdmap.com/api',
   :geo_url => 'http://maps.googleapis.com/maps/api/geocode/json',
   :parameters => {
     :required => { },
@@ -23,34 +23,20 @@ CONFIG = {
 
 class UshahidiGateway
 
-  attr_reader :credentials
+  attr_reader :user, :password
 
   def initialize(credentials)
-    @credentials = { :user => credentials[:user], :password => credentials[:password] }
+    # @credentials = { :user => credentials[:user], :password => credentials[:password] }
+    @user = credentials[:user]
+    @password = credentials[:password]
   end
-
-  def build_query options
-    "?" + options.map {  |k,v| [k.to_s, v] * '=' } * '&'
-  end
-
-
-
 
   def get url
      raise "implement get method for the Ushahidi gateway"
   end
 
   def post url, payload
-    uri = URI(url + build_query(payload))
-
-    request = Net::HTTP::POST.new(uri.request_uri)
-
-    req.basic_auth *credentials.values
-
-    response = Net::HTTP.start(uri.hostname, uri.port ) do |http|
-      http.request(request)
-    end
-
+    response = Net::HTTP.post_form(URI.parse("http://#{user}:#{password}@" + url), payload )
     response.body
   end
 
