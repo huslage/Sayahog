@@ -66,7 +66,7 @@ class UshahidiClient
   def build_options_from report
     payload = {
       :task => 'report',
-      :incident_title => '',
+      :incident_title => report[:title],
       :incident_description => report[:incident_description],
       :incident_category => report[:category],
       :incident_date => get_date_and_time[:date],
@@ -75,7 +75,7 @@ class UshahidiClient
       :incident_ampm => get_date_and_time[:am_pm],
       :latitude => report[:latitude],
       :longitude => report[:longitude],
-      :location_name => ''
+      :location_name => report[:location_name]
     }
   end
 
