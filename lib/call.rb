@@ -22,7 +22,7 @@ module LocalTesting
   end
 
 
-#  $currentCall = CurrentCall.new
+  #$currentCall = CurrentCall.new
 
 
   class Event
@@ -55,13 +55,22 @@ module LocalTesting
       when 1 then '8'
       when 2 then '0023'
       when 3 then '1'
-      when 4 then '0'
+      when 4 then '2'
       else '1'
     end
 
+    puts "value is #{value}"
+
     event = Event.new(value)
 
-    choices = options[:choices].split(',') if options[:choices]
+    if options[:choices]
+      if options[:choices].match("DIGIT")
+        choices = ['0023']
+      else
+        choices = options[:choices].split(',')
+      end
+    end
+
     if choices
       if choices.include?(value)
         options[:onChoice].call(event) if options[:onChoice]
@@ -96,7 +105,7 @@ end
 
 class Call
 
-#  include LocalTesting
+  #include LocalTesting
 
   attr_accessor :caller_info
 
