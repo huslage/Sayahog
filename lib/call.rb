@@ -81,10 +81,11 @@ class Call
   def initialize
     @maintainance_authorized = false
     @caller_info = {}
-    @ask_default_options = { :mode => 'dtmf',
-                :bargein => true,
-                :attempts => 3,
-                :onBadChoice => "byenow" }
+    @ask_default_options = {
+      :mode => 'dtmf',
+      :bargein => true,
+      :attempts => 3,
+      :onBadChoice => "byenow" }
   end
 
   def run( maintainance_authorized = false )
@@ -101,6 +102,8 @@ class Call
 
     wait(100)
 
+    # retries getting the site till successful, or kicks out the user after too many retries
+    # after it ran successfully we have a @site instance variable with the chosen site
     get_site_info
 
     # TODO: DEPRECATED, BUT CHECK THAT NOTHING IS MISSING IN OUR CODE
@@ -124,7 +127,6 @@ class Call
     AUDIO_URL + msg + AUDIO_TYPE
   end
 
-
   def authorize_maintainance_mode
     unless @maintainance_authorized
       say *MAINTENANCE_MESSAGE
@@ -141,6 +143,40 @@ class Call
   end
 
 
+  def check_store_and_verify_site_or_retry(choice_event)
+    log("=========================== Result: #{choice_event.value} (event type: #{event.name})")
+    if SITES[choice_event.value]
+      @site = {:id => choice_event.value, :data => SITES[choice_event.value] }
+      log("Found site #{choice_event.value} (#{@site.inspect})")
+      verify_site
+    else
+      log("Didn't find site with number #{choice_event.value}}")
+      get_site_info
+    end
+  end
+
+  # ask user to verify the site number typed in
+  def verify_site
+    verification_prompt = isay("#{@site[:id]}_Verification")
+    event = ask(verification_prompt, {
+                  :choices => "1,2",
+                  :mode => "dtmf",
+                  :bargein => true,
+                  :attempts => 3,
+                  :onBadChoice => lambda {|event| byenow }
+                })
+    if event.name == 'choice'
+      if event.value == "1"
+        caller_info['site_verified'] = true
+      else
+        get_site_info
+      end
+    else
+      log("received #{event.name} and #{event.value} - retrying")
+      get_site_info
+    end
+  end
+
   def get_site_info
 
     log "Currently trying to get site info." if DEBUG
@@ -149,15 +185,20 @@ class Call
 
     caller_info[:retries] += 1
 
-    log("=========================== Count: #{event.value}" )
+    log("=========================== Count: #{caller_info[:retries]}}" )
 
     question = isay("1_1_Enter_4_digit_code_number")
 
-    choices = "[4-DIGITS]"
-
-    event = ask( question )
-
+    event = ask(question, {
+                :choices => "[4-DIGITS]",
+                :mode => "dtmf",
+                :bargein => true,
+                :attempts => 3,
+                :onBadChoice => lambda {|event| byenow },
+                :onChoice => lambda {|event| check_store_and_verify_site_or_retry(event) }
+                })
   end
+
 
   def store_initial_caller_info
     caller_info[:caller_number] = $currentCall.callerID
@@ -175,13 +216,13 @@ class Call
       urgent_action
     when 1
       money_demanded
-    end      
+    end
   end
 
   def urgent_action
     log("URGENT ACTION NOT YET IMPLEMENTED")
   end
-  
+
   def money_demanded
     question = isay("3_1_a__if_spent_less_that_500_or_more_than_500")
     choices = "1,2"
@@ -230,22 +271,21 @@ class Call
     # TODO call incident action after this method
   end
 
-  
   def capture_or_reset(event)
     log("capture or reset")
     case event.value
-      when 1
+      when "1"
       capture_data!
-      when 2
+      when "2"
       get_incident_code_and_type!
-    end 
+    end
   end
-  
+
   # TODO
   def capture_data!
     byenow!
   end
-  
+
   def byenow!
     isay("0_2_End_Message_1_Thank_You")
     hangup!
@@ -254,11 +294,14 @@ class Call
   def hangup!
     hangup
   end
-  
 
   def maintenance_authorized!
     @maintenance_authorized = true
     say "Maintenance mode entered. Warning, Hull breach imminent!"
+  end
+
+  def invalid_choice
+    raise "invalid choice is not yet implemented"
   end
 
 
