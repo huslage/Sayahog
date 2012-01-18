@@ -187,9 +187,36 @@ class Call
     choices = "1,2"
     options = @ask_default_options.merge(:choices => "1,2")
     event = ask(question, options)
+    caller_info[:money_code] = event.value
+    confirmation!
   end
   
+  def confirmation
+    say(@site[:id])
+    caller_info[:money_demanded] = caller_info[:money_code] > 1 ? 'More_than_500' : 'Less_than_500'
+    question = isay(@site[:id]+"_Money_Demanded_"+caller_info[:money_demanded])
+    event = ask(question, @ask_default_options.merge(:choices => '1,2'))
+    capture_or_reset(event)
+  end
   
+  # TODO event.value returns a string
+  
+  
+  
+  def sorry_message(event)
+    if DEBUG
+      say("sorry! sending you back to the main menu")
+      _log("We're in sorry_message, so something has gone horribly wrong!")
+      caller_info.each_pair do |k,v|
+        log("Key named: #{k} with value: #{v}")
+      end
+    end
+    
+    log("IVRS 0.3 - CAller at #{current_info[:caller_number]} was unable to use the menu :(")
+    say("ok, sending you back to the main menu!")
+    wait(300);
+    # TODO somethin shoud be called here, it's main in php
+  end
   
   
   def get_incident_code_and_type!
