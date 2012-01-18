@@ -192,7 +192,7 @@ class Call
       :mode => 'dtmf',
       :bargein => true,
       :attempts => 3,
-      :onBadChoice => lambda { |event| byenow! }
+      :onBadChoice => lambda { |event| invalid_choice }
     }
   end
 
@@ -269,7 +269,7 @@ class Call
                   :mode => "dtmf",
                   :bargein => true,
                   :attempts => 3,
-                  :onBadChoice => lambda {|event| byenow! }
+                  :onBadChoice => lambda {|event| invalid_choice }
                 })
     if event.name == 'choice'
       if event.value == "1"
@@ -296,6 +296,7 @@ class Call
                 :bargein => true,
                 :attempts => 3,
                 :onBadChoice => lambda {|event| get_site_info },
+                :onTimeout => lambda {|event| get_site_info },
                 :onChoice => lambda {|event| check_store_and_verify_site_or_retry(event) }
                 })
   end
@@ -306,7 +307,8 @@ class Call
     prompts = isay("2_1_Options")
     options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9',
                                          :onChoice => lambda {|event| store_incident_code(event) ; wait(300)},
-                                         :onBadChoice => lambda {|event| get_incident_code_and_type! })
+                                         :onBadChoice => lambda {|event| get_incident_code_and_type! },
+                                         :onTimeout => lambda {|event| get_incident_code_and_type! })
     event = ask(prompts, options)
   end
 
@@ -333,7 +335,8 @@ class Call
     question = isay("3_1_a__if_spent_less_that_500_or_more_than_500")
     options = @ask_default_options.merge(:choices => "1,2",
                                          :onChoice => lambda { |event| @money_code = event.value ; store_and_confirm_money_code(event) },
-                                         :onBadChoice => lambda { |event| money_demanded })
+                                         :onBadChoice => lambda { |event| money_demanded },
+                                         :onTimeout => lambda { |event| money_demanded })
     event = ask(question, options)
     caller_info['money_code'] = event.value
     confirmation!
@@ -345,6 +348,7 @@ class Call
     question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
     event = ask(question, @ask_default_options.merge(:choices => '1,2',
                                                      :onBadChoice => lambda {|event| store_and_confirm_money_code},
+                                                     :onTimeout => lambda {|event| store_and_confirm_money_code},
                                                      :onChoice => lambda { |event| confirm_money_code(event) }))
   end
 
