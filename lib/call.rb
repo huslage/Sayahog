@@ -19,7 +19,7 @@ class Call
 
   #SHOULDNT: it be an instance variable in ruby
 
-  INCIDENT_CODE = {
+  INCIDENTS = {
     '1' => 'Health worker asked for bribe to admit you or treat you in hospital.',
     '2' => 'You were asked to pay money after delivery.',
     '3' => 'You were asked to pay for drugs, blood, tests, etc.',
@@ -85,7 +85,7 @@ class Call
       :mode => 'dtmf',
       :bargein => true,
       :attempts => 3,
-      :onBadChoice => "byenow" }
+      :onBadChoice => lambda { |event| byenow } }
   end
 
   def run( maintainance_authorized = false )
@@ -109,13 +109,15 @@ class Call
     # TODO: DEPRECATED, BUT CHECK THAT NOTHING IS MISSING IN OUR CODE
     #  caller_info[ ] = get_site_info()
     #  caller_info[:incident_code] = get_incident_type()
-    #  caller_info[:incident_type] = INCIDENT_CODE[ caller_info[:icode] ]
+    #  caller_info[:incident_type] = INCIDENT[ caller_info[:icode] ]
     #  caller_info[ ] = get_site_info()
 
     # we were told this is a leftover
     ## $saybye = create_function('$event', 'isay("0_2_End_Message_1_Thank_You")');
 
     get_incident_code_and_type!
+
+    get_incident_action
 
     # report = build_report caller_info
 
@@ -208,17 +210,6 @@ class Call
     log( "Caller: " + caller_info[:caller_number] )
   end
 
-  def incident_action
-    # FIXME this is already available?
-    caller_info['incident description'] = INCIDENT_CODE[caller_info['incident_code']]
-    case caller_info['icode']
-    when 0
-      urgent_action
-    when 1
-      money_demanded
-    end
-  end
-
   def urgent_action
     log("URGENT ACTION NOT YET IMPLEMENTED")
   end
@@ -232,13 +223,28 @@ class Call
 
   def get_incident_code_and_type!
     prompts = isay("2_1_Options")
-    options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9' )
+    options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9',
+                                         :onChoice => lambda {|event| store_incident_code(event) ; wait(300)})
     event = ask(prompts, options)
-    caller_info[:incident_code] = event.value
-    caller_info[:incident_type] = INCIDENT_CODE[ caller_info[:incident_code] ]
-    log("get_incident_type -> incident_action")
-    wait(300)
-    # TODO call incident action after this method
+  end
+
+  def get_incident_action
+    log("getting the right action for incident")
+    case @incident[:id]
+    when '0'
+      urgent_action
+    when '9'
+      # nothing
+    else
+      money_demanded
+    end
+  end
+
+  def store_incident_code(choice_event)
+    @incident ||= {}
+    @incident[:id] = choice_event.value
+    @incident[:data] = INCIDENTS[choice_event.value]
+    log("Incident is: #{@incident[:id]}: #{@incident[:data]}")
   end
 
   def capture_or_reset(event)
