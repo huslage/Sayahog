@@ -1,4 +1,92 @@
+##
+## Author: D:evolute
+## proudly presented by adap:to
+## devolute.org
+
+module LocalTesting
+
+  class CurrentCall
+
+    def callerID
+      "foo"
+    end
+
+    def network
+      "vodafone"
+    end
+
+    def callerName
+      "CallerName"
+    end
+
+  end
+
+
+  $currentCall = CurrentCall.new
+
+
+  class Event
+
+    def initialize(value)
+      @value = value
+    end
+
+    def name
+      "choice"
+    end
+
+    def value
+      @value
+    end
+
+  end
+
+  def answer
+    puts "answer"
+  end
+
+  def ask(what, options)
+    puts "asked #{what} - #{options}"
+
+    @ask_count ||= 0
+    @ask_count += 1
+
+    value = case @ask_count
+      when 1 then '8'
+      when 2 then '0023'
+      else '1'
+    end
+
+    event = Event.new(value)
+    options[:onChoice].call(event) if options[:onChoice]
+    event
+  end
+
+  def say(what, options={})
+    puts "say #{what}"
+  end
+
+  def redirect(where)
+    puts "redirect #{where}"
+  end
+
+  def log(what)
+    puts "logged: #{what}}"
+  end
+
+  def hangup
+    puts "hung up"
+    exit
+  end
+
+  def wait(howlong)
+    "waiting #{howlong}"
+  end
+end
+
 class Call
+
+#  include LocalTesting
 
   attr_accessor :caller_info
 
@@ -19,7 +107,7 @@ class Call
 
   #SHOULDNT: it be an instance variable in ruby
 
-  INCIDENT = {
+  INCIDENTS = {
     '1' => 'Health worker asked for bribe to admit you or treat you in hospital.',
     '2' => 'You were asked to pay money after delivery.',
     '3' => 'You were asked to pay for drugs, blood, tests, etc.',
@@ -77,8 +165,6 @@ class Call
   ##    $cinfo = array();
   ####  $icode = NULL;  # WHY?!
 
-
-
   def initialize
     @maintainance_authorized = false
     @caller_info = {}
@@ -91,12 +177,12 @@ class Call
     }
   end
 
-  def run( maintainance_authorized = false )
+  def run
 
     answer()
 
     # hangup if maintenance mode is active but not authorized
-    authorize_maintainance_mode if MAINTENANCE
+    authorize_maintainance_mode if MAINTENANCE_MODE
 
     # store basic caller information (name, number, set retries to 0)
     store_initial_caller_info
@@ -127,25 +213,27 @@ class Call
   end
 
   def authorize_maintainance_mode
-    unless @maintainance_authorized
+    unless @maintenance_authorized
       say *MAINTENANCE_MESSAGE
       ask("", {
             :choices => MAINTENANCE_PASSWORD,
             :mode => "dtmf",
             :timeout => 120.0,
             :onTimeout => :hangup,
-            :onChoice => lambda {|event| maintenance_authorized!}
+            :onChoice => lambda {|event| maintenance_authorized!},
+            :onBadChoice => lambda {|event| invalid_choice! }
           })
-      log("Somebody called during maintenance: #{$currentCall.callerID}" )
-      hangup()
+      unless @maintenance_authorized
+        log("Somebody called during maintenance: #{$currentCall.callerID}" )
+        hangup()
+      end
     end
   end
 
-
-  def check_store_and_verify_site_or_retry(choice_event, retries)
-    log("=========================== Result: #{choice_event.value} (event type: #{event.name})")
+  def check_store_and_verify_site_or_retry(choice_event)
+    log("=========================== Result: #{choice_event.value} (event type: #{choice_event.name})")
     if SITES[choice_event.value]
-      @site = {:id => choice_event.value, :data => SITES[choice_event.value] }
+      @site = {'id' => choice_event.value, 'data' => SITES[choice_event.value] }
       log("Found site #{choice_event.value} (#{@site.inspect})")
       verify_site
     else
@@ -222,7 +310,7 @@ class Call
   def money_demanded
     question = isay("3_1_a__if_spent_less_that_500_or_more_than_500")
     options = @ask_default_options.merge(:choices => "1,2",
-                                         :onChoice => lambda { |event| store_money_code_and_ask_for_details },
+                                         :onChoice => lambda { |event| @money_code = event.value ; store_and_confirm_money_code(event) },
                                          :onBadChoice => lambda { |event| money_demanded })
     event = ask(question, options)
     caller_info['money_code'] = event.value
@@ -230,7 +318,8 @@ class Call
   end
 
   def store_and_confirm_money_code(event)
-    @money_code = event.value
+    log("User choose money_code #{@money_code} (#{MONEY_CODES[@money_code]})")
+    log("In site #{@site['id']}")
     question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
     event = ask(question, @ask_default_options.merge(:choices => '1,2',
                                                      :onBadChoice => lambda {|event| store_and_confirm_money_code},
@@ -242,6 +331,7 @@ class Call
       log("User confirmed amount of money")
       byenow!
     else
+      log('User did not confirm incident. Redirecting back to choosing incident')
       reset_retry_counts
       # send back to choose incident code
       get_incident_code_and_type!
@@ -304,12 +394,12 @@ class Call
     @retries[action] ||= 0
     invalid_choice if @retries[action] > 2
     @retries[action] += 1
-    log("=========================== Count: #{@retries[action]}")
+    log("=========================== Count for action '#{action}': #{@retries[action]}")
   end
 
   def reset_retry_counts
     @retries.each_pair{|k,v| @retries[k] = 0}
-
+    log("==== retry counts resetted")
   end
 
   def invalid_choice
