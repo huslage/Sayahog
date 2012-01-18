@@ -176,10 +176,12 @@ class Call
   end
 
   def byenow
-    
+    isay("0_2_End_Message_1_Thank_You")
+    hangup!
   end
 
-
+  
+  
 end
 
 
