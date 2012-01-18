@@ -252,14 +252,6 @@ class Call
     # TODO somethin shoud be called here, it's main in php
   end
 
-
-  def get_incident_code_and_type!
-    prompts = isay("2_1_Options")
-    options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9',
-                                         :onChoice => lambda {|event| store_incident_code(event) ; wait(300)})
-    event = ask(prompts, options)
-  end
-
   def get_incident_action
     log("getting the right action for incident")
     case @incident[:id]
