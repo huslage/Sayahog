@@ -16,6 +16,9 @@ class Call
 
 
   # incident code -> description
+
+  #SHOULDNT: it be an instance variable in ruby
+
   INCIDENT_CODE = {
     '1' => 'Health worker asked for bribe to admit you or treat you in hospital.',
     '2' => 'You were asked to pay money after delivery.',
@@ -79,17 +82,6 @@ class Call
 
   end
 
-
-  def isay msg
-    AUDIO_URL + msg + AUDIO_TYPE
-  end
-
-
-  supervisor = lambda do
-    # @maintenance_authorized = true
-    run( true ) # @maintenance_authorized )
-  end
-
   def run( maintainance_authorized = false )
 
     answer()
@@ -126,28 +118,63 @@ class Call
 
     wait(100)
 
-    caller_info = get_site_info()
+    caller_info[ ] = get_site_info()
+
+
+
 
     caller_info[:incident_code] = get_incident_type()
 
     caller_info[:incident_type] = INCIDENT_CODE[ caller_info[:icode] ]
 
+    #   report = build_report caller_info
+
+
+
   end
 
   private
 
-  def isay *args
-   # TODO
+  def isay msg
+    AUDIO_URL + msg + AUDIO_TYPE
   end
 
-  def byenow
+  supervisor = lambda do
+    # @maintenance_authorized = true
+    run( true ) # @maintenance_authorized )
   end
+
 
   def get_site_info
+
+    log "Currently trying to get site info." if DEBUG
+
+    invalid_choice if caller_info[:retries] > 2
+
+    caller_info[:retries] += 1
+
+    log("=========================== Count: #{event.value}" )
+
+    question = isay("1_1_Enter_4_digit_code_number")
+
+    choices = "[4-DIGITS]"
+
+    event = ask( question, )
+
+
+
   end
 
   def get_incident_type
+
+
   end
+
+  def byenow
+
+
+  end
+
 
 end
 
