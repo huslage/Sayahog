@@ -22,7 +22,7 @@ module LocalTesting
   end
 
 
-  #$currentCall = CurrentCall.new
+  # $currentCall = CurrentCall.new
 
 
   class Event
@@ -56,7 +56,7 @@ module LocalTesting
       when 2 then '0023'
       when 3 then '1'
       when 4 then '2'
-      else '1'
+      else 'foo'
     end
 
     puts "value is #{value}"
@@ -105,7 +105,7 @@ end
 
 class Call
 
-  #include LocalTesting
+#  include LocalTesting
 
   attr_accessor :caller_info
 
@@ -206,7 +206,7 @@ class Call
     # store basic caller information (name, number, set retries to 0)
     store_initial_caller_info
 
-    isay "0_1_Welcome_Message"
+    say(isay "0_1_Welcome_Message")
 
     wait(100)
 
@@ -240,11 +240,11 @@ class Call
             :timeout => 120.0,
             :onTimeout => :hangup,
             :onChoice => lambda {|event| maintenance_authorized!},
-            :onBadChoice => lambda {|event| invalid_choice }
+            :onBadChoice => lambda {|event| hangup! }
           })
       unless @maintenance_authorized
         log("Somebody called during maintenance: #{$currentCall.callerID}" )
-        hangup()
+        hangup!
       end
     end
   end
@@ -327,6 +327,9 @@ class Call
 
   # section 1.3 in the specs
   def money_demanded
+
+    kick_out_after_too_many_retries_for!(:money_demanded)
+
     question = isay("3_1_a__if_spent_less_that_500_or_more_than_500")
     options = @ask_default_options.merge(:choices => "1,2",
                                          :onChoice => lambda { |event| @money_code = event.value ; store_and_confirm_money_code(event) },
@@ -395,7 +398,7 @@ class Call
   end
 
   def byenow!
-    isay("0_2_End_Message_1_Thank_You")
+    say(isay("0_2_End_Message_1_Thank_You"))
     capture_data!
     hangup!
   end
@@ -422,7 +425,7 @@ class Call
   end
 
   def invalid_choice
-    isay("0_3_End_Message_2_Not_entered_a_valid_choice")
+    say(isay("0_3_End_Message_2_Not_entered_a_valid_choice"))
     hangup!
   end
 
