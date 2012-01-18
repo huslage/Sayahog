@@ -108,18 +108,15 @@ class Call
     # after it ran successfully we have a @site instance variable with the chosen site
     get_site_info
 
-    # TODO: DEPRECATED, BUT CHECK THAT NOTHING IS MISSING IN OUR CODE
-    #  caller_info[ ] = get_site_info()
-    #  caller_info[:incident_code] = get_incident_type()
-    #  caller_info[:incident_type] = INCIDENT[ caller_info[:icode] ]
-    #  caller_info[ ] = get_site_info()
-
+    # gets current incident code
+    # stores the incident action, or kicks out after several retries
     get_incident_code_and_type!
 
-    get_incident_action
+    # either asks for the amount of money
+    # or in emergency sends report to call the number
+    incident_action!
 
     # report = build_report caller_info
-
   end
 
   private
@@ -196,7 +193,6 @@ class Call
   end
 
   def get_incident_code_and_type!
-
     kick_out_after_too_many_retries_for!(:get_incident_code_and_type)
 
     prompts = isay("2_1_Options")
@@ -214,12 +210,14 @@ class Call
     log( "Caller: " + caller_info['caller_number'] )
   end
 
-  # TODO urgent action
+  # section 1.4 in the specs
+  # attention, the specs defined this to send a report for callback, instead we want to redirect
   def urgent_action
     phone = @site['data']['phone']
     redirect(phone)
   end
 
+  # section 1.3 in the specs
   def money_demanded
     question = isay("3_1_a__if_spent_less_that_500_or_more_than_500")
     choices = "1,2"
@@ -252,13 +250,11 @@ class Call
     # TODO somethin shoud be called here, it's main in php
   end
 
-  def get_incident_action
+  def incident_action!
     log("getting the right action for incident")
     case @incident[:id]
     when '0'
       urgent_action
-    when '9'
-      # nothing
     else
       money_demanded
     end
