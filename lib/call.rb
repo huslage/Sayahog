@@ -1,5 +1,3 @@
-require 'hashie/mash'
-
 class Call
 
   attr_accessor :caller_info
@@ -21,7 +19,7 @@ class Call
 
   #SHOULDNT: it be an instance variable in ruby
 
-  INCIDENT_CODE = Hashie::Mash.new({
+  INCIDENT_CODE = {
     '1' => 'Health worker asked for bribe to admit you or treat you in hospital.',
     '2' => 'You were asked to pay money after delivery.',
     '3' => 'You were asked to pay for drugs, blood, tests, etc.',
@@ -32,13 +30,13 @@ class Call
     '8' => 'Were asked to pay for or not provided with food during your stay in the JSSK hospitals.',
     '9' => 'Were not provided with free drop back facility from JSSK hospitals.',
     '0' => 'This is a situation which might result in death of the woman/child and no action is being taken by the staff.',
-  })
+  }
 
 
   # secret decoder ring for health facilities
   # site number (key): site, location, phone
   # these sites are in the Azamgar District
-  SITES = Hashie::Mash.new({
+  SITES = {
     '0001' => {'name'=>'Azamgarh Sadar Mahila Hospital', 'location'=>'26.063777,83.183628', 'phone'=>'+919451113651', 'district' => 'Azamgarh_Zila_District'},
     '0002' => {'name'=>'Phoolpur', 'location'=>'26.044017,82.520839', 'phone'=>'+919451113651', 'district' => 'Azamgarh_Zila_District'},
     '0003' => {'name'=>'Lalganj', 'location'=>'25.450143,82.59002', 'phone'=>'+919451113651', 'district' => 'Azamgarh_Zila_District'},
@@ -72,7 +70,7 @@ class Call
     '0030' => {'name'=>'Vijaypur', 'location'=>'25.073399,82.378023', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'},
     '0031' => {'name'=>'Jamalpur', 'location'=>'25.09245,83.052788', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'},
     '0032' => {'name'=>'Chil', 'location'=>'25.152229,82.563699', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'}
-  })
+  }
   # end decoder ring
 
   ##    $cinfo = array();
@@ -83,11 +81,11 @@ class Call
   def initialize
     @maintainance_authorized = false
     @caller_info = {}
-    @ask_default_options = Hashie::Mash.new({
+    @ask_default_options = {
       :mode => 'dtmf',
       :bargein => true,
       :attempts => 3,
-      :onBadChoice => "byenow" })
+      :onBadChoice => "byenow" }
   end
 
   def run( maintainance_authorized = false )
@@ -183,11 +181,11 @@ class Call
 
     log "Currently trying to get site info." if DEBUG
 
-    invalid_choice if caller_info[:retries] > 2
+    invalid_choice if caller_info['retries'] > 2
 
-    caller_info[:retries] += 1
+    caller_info['retries'] += 1
 
-    log("=========================== Count: #{caller_info[:retries]}}" )
+    log("=========================== Count: #{caller_info['retries']}}" )
 
     question = isay("1_1_Enter_4_digit_code_number")
 
@@ -203,11 +201,11 @@ class Call
 
 
   def store_initial_caller_info
-    caller_info[:caller_number] = $currentCall.callerID
-    caller_info[:retries] = 0
-    caller_info[:network] = $currentCall.network
-    caller_info[:caller_name] = $currentCall.callerName if $currentCall.callerName
-    log( "Caller: " + caller_info[:caller_number] )
+    caller_info['caller_number'] = $currentCall.callerID
+    caller_info['retries'] = 0
+    caller_info['network'] = $currentCall.network
+    caller_info['caller_name'] = $currentCall.callerName if $currentCall.callerName
+    log( "Caller: " + caller_info['caller_number'] )
   end
 
   def incident_action
@@ -223,7 +221,7 @@ class Call
 
   # TODO urgent action
   def urgent_action
-    phone = @site[:data][:phone] 
+    phone = @site['data']['phone'] 
     redirect(phone)
   end
 
@@ -232,14 +230,14 @@ class Call
     choices = "1,2"
     options = @ask_default_options.merge(:choices => "1,2")
     event = ask(question, options)
-    caller_info[:money_code] = event.value
+    caller_info['money_code'] = event.value
     confirmation!
   end
   
   def confirmation
-    say(@site[:id])
-    caller_info[:money_demanded] = caller_info[:money_code] > 1 ? 'More_than_500' : 'Less_than_500'
-    question = isay(@site[:id]+"_Money_Demanded_"+caller_info[:money_demanded])
+    say(@site['id'])
+    caller_info['money_demanded'] = caller_info['money_code'] > 1 ? 'More_than_500' : 'Less_than_500'
+    question = isay(@site['id']+"_Money_Demanded_"+caller_info['money_demanded'])
     event = ask(question, @ask_default_options.merge(:choices => '1,2'))
     capture_or_reset(event)
   end
@@ -268,8 +266,8 @@ class Call
     prompts = isay("2_1_Options")
     options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9' )
     event = ask(prompts, options)
-    caller_info[:incident_code] = event.value
-    caller_info[:incident_type] = INCIDENT_CODE[ caller_info[:incident_code] ]
+    caller_info['incident_code'] = event.value
+    caller_info['incident_type'] = INCIDENT_CODE[ caller_info['incident_code'] ]
     log("get_incident_type -> incident_action")
     wait(300)
     # TODO call incident action after this method
