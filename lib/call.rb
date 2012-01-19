@@ -469,9 +469,9 @@ class Call
 
     question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
     event = ask(question, @ask_default_options.merge(:choices => '1,2',
-                                                     :onBadChoice => lambda {|event| confirm_money_code},
-                                                     :onTimeout => lambda {|event| confirm_money_code},
-                                                     :onChoice => labmda {|event| react_on_confirmed_money_code(event)})
+                                                     :onBadChoice => lambda { |event| confirm_money_code},
+                                                     :onTimeout => lambda { |event| confirm_money_code},
+                                                     :onChoice => labmda { |event| react_on_confirmed_money_code(event)}))
   end
 
   def react_on_confirmed_money_code(event)
