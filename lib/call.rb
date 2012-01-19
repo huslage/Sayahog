@@ -468,6 +468,7 @@ class Call
 
     question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
     event = ask(question, @ask_default_options.merge(:choices => '1,2'))
+    log("User choose #{event.inspect}")
     if event.value == "1"
       log("User confirmed amount of money")
       byenow!
