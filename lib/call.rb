@@ -470,13 +470,16 @@ class Call
     question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
     event = ask(question, @ask_default_options.merge(:choices => '1,2',
                                                      :onBadChoice => lambda {|event| confirm_money_code},
-                                                     :onTimeout => lambda {|event| confirm_money_code}))
+                                                     :onTimeout => lambda {|event| confirm_money_code},
+                                                     :onChoice => labmda {|event| react_on_confirmed_money_code(event)))
+  end
 
+  def react_on_confirmed_money_code(event)
     if event.value == "1"
       log("User confirmed amount of money")
       byenow!
     else
-      log('User did not confirm incident. Redirecting back to choosing incident')
+      log('User did not confirm money code. Redirecting back to choosing incident')
       reset_retry_counts
       # send back to choose incident code
       get_incident_code_and_type!
