@@ -295,8 +295,7 @@ class Call
     @ask_default_options = {
       :mode => 'dtmf',
       :bargein => true,
-      :attempts => 3,
-      :onBadChoice => lambda { |event| invalid_choice }
+      :attempts => 3
     }
   end
 
@@ -468,13 +467,7 @@ class Call
     kick_out_after_too_many_retries_for!(:confirm_money_code)
 
     question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
-    event = ask(question, @ask_default_options.merge(:choices => '1,2',
-                                                     :onBadChoice => lambda { |event| confirm_money_code},
-                                                     :onTimeout => lambda { |event| confirm_money_code},
-                                                     :onChoice => lambda { |event| react_on_confirmed_money_code(event)}))
-  end
-
-  def react_on_confirmed_money_code(event)
+    event = ask(question, @ask_default_options.merge(:choices => '1,2'))
     if event.value == "1"
       log("User confirmed amount of money")
       byenow!
