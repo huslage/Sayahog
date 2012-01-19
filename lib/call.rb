@@ -408,11 +408,9 @@ class Call
     kick_out_after_too_many_retries_for!(:get_incident_code_and_type)
 
     prompts = isay("2_1_Options")
-    options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9',
-                                         :onChoice => lambda {|event| store_incident_code(event) ; wait(300)},
-                                         :onBadChoice => lambda {|event| get_incident_code_and_type! },
-                                         :onTimeout => lambda {|event| get_incident_code_and_type! })
+    options = @ask_default_options.merge(:choices => '0,1,2,3,4,5,6,7,8,9')
     event = ask(prompts, options)
+    store_incident_code(event)
   end
 
   def store_initial_caller_info
@@ -436,11 +434,9 @@ class Call
     kick_out_after_too_many_retries_for!(:money_demanded)
 
     question = isay("3_1_a__if_spent_less_that_500_or_more_than_500")
-    options = @ask_default_options.merge(:choices => "1,2",
-                                         :onChoice => lambda { |event| store_and_confirm_money_code(event) },
-                                         :onBadChoice => lambda { |event| money_demanded },
-                                         :onTimeout => lambda { |event| money_demanded })
+    options = @ask_default_options.merge(:choices => "1,2")
     event = ask(question, options)
+    store_and_confirm_money_code(event)
   end
 
 
