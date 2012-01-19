@@ -463,14 +463,14 @@ class Call
     confirm_money_code
   end
 
-  def confirm_money_code(event)
+  def confirm_money_code
 
     kick_out_after_too_many_retries_for!(:confirm_money_code)
 
     question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
     event = ask(question, @ask_default_options.merge(:choices => '1,2',
-                                                     :onBadChoice => lambda {|event| confirm_money_code(event)},
-                                                     :onTimeout => lambda {|event| confirm_money_code(event)}))
+                                                     :onBadChoice => lambda {|event| confirm_money_code},
+                                                     :onTimeout => lambda {|event| confirm_money_code}))
 
     if event.value == "1"
       log("User confirmed amount of money")
