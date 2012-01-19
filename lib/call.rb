@@ -367,13 +367,10 @@ class Call
   # ask user to verify the site number typed in
   def verify_site
     verification_prompt = isay("#{@site['id']}_Verification")
-    event = ask(verification_prompt, {
-                  :choices => "1,2",
-                  :mode => "dtmf",
-                  :bargein => true,
-                  :attempts => 3,
-                  :onBadChoice => lambda {|event| invalid_choice }
-                })
+
+    options = @ask_default_options.merge(:choices => "1,2")
+
+    event = ask(verification_prompt, options)
     if event.name == 'choice'
       if event.value == "1"
         caller_info['site_verified'] = true
@@ -392,16 +389,10 @@ class Call
     kick_out_after_too_many_retries_for!(:get_site_info)
 
     question = isay("1_1_Enter_4_digit_code_number")
-
-    event = ask(question, {
-                :choices => "[4-DIGITS]",
-                :mode => "dtmf",
-                :bargein => true,
-                :attempts => 3,
-                :onBadChoice => lambda {|event| get_site_info },
-                :onTimeout => lambda {|event| get_site_info },
-                :onChoice => lambda {|event| check_store_and_verify_site_or_retry(event) }
-                })
+    
+    options = @ask_default_options.merge(:choices => "[4-DIGITS]")
+    event = ask(question, options)
+    check_store_and_verify_site_or_retry(event)
   end
 
   def get_incident_code_and_type!
