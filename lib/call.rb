@@ -438,13 +438,20 @@ class Call
 
     question = isay("3_1_a__if_spent_less_that_500_or_more_than_500")
     options = @ask_default_options.merge(:choices => "1,2",
-                                         :onChoice => lambda { |event| @money_code = event.value ; store_and_confirm_money_code(event) },
+                                         :onChoice => lambda { |event| store_and_confirm_money_code(event) },
                                          :onBadChoice => lambda { |event| money_demanded },
                                          :onTimeout => lambda { |event| money_demanded })
     event = ask(question, options)
   end
 
   def store_and_confirm_money_code(event)
+
+    @money_code = event.value 
+    
+    unless MONEY_CODES[@money_code]
+      log("Something went wrong - no valid money code, but still trying to store: #{event}")
+      money_demanded
+    end
 
     kick_out_after_too_many_retries_for!(:store_and_confirm_money_code)
 
