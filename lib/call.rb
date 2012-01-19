@@ -511,7 +511,7 @@ class Call
 
   def report
     lat, lon = lat_lon
-    description = @incident['data']
+    description = @incident['data'].dup
     if money_description = MONEY_DESCRIPTION[@money_code]
       description << " #{money_description}"
     end
