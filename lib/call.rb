@@ -444,7 +444,11 @@ class Call
     event = ask(question, options)
   end
 
+
+
   def store_and_confirm_money_code(event)
+
+    log("trying to store money code")
 
     @money_code = event.value 
     
@@ -453,18 +457,21 @@ class Call
       money_demanded
     end
 
-    kick_out_after_too_many_retries_for!(:store_and_confirm_money_code)
-
     log("User choose money_code #{@money_code} (#{MONEY_CODES[@money_code]})")
     log("In site #{@site['id']}")
-    question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
-    event = ask(question, @ask_default_options.merge(:choices => '1,2',
-                                                     :onBadChoice => lambda {|event| store_and_confirm_money_code(event)},
-                                                     :onTimeout => lambda {|event| store_and_confirm_money_code(event)},
-                                                     :onChoice => lambda { |event| confirm_money_code(event) }))
+
+    confirm_money_code
   end
 
   def confirm_money_code(event)
+
+    kick_out_after_too_many_retries_for!(:confirm_money_code)
+
+    question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
+    event = ask(question, @ask_default_options.merge(:choices => '1,2',
+                                                     :onBadChoice => lambda {|event| confirm_money_code(event)},
+                                                     :onTimeout => lambda {|event| confirm_money_code(event)}))
+
     if event.value == "1"
       log("User confirmed amount of money")
       byenow!
