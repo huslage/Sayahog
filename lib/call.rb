@@ -471,7 +471,7 @@ class Call
     event = ask(question, @ask_default_options.merge(:choices => '1,2',
                                                      :onBadChoice => lambda { |event| confirm_money_code},
                                                      :onTimeout => lambda { |event| confirm_money_code},
-                                                     :onChoice => labmda { |event| react_on_confirmed_money_code(event)}))
+                                                     :onChoice => lamdda { |event| react_on_confirmed_money_code(event)})
   end
 
   def react_on_confirmed_money_code(event)
