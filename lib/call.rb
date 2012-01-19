@@ -440,8 +440,6 @@ class Call
                                          :onBadChoice => lambda { |event| money_demanded },
                                          :onTimeout => lambda { |event| money_demanded })
     event = ask(question, options)
-    caller_info['money_code'] = event.value
-    confirmation!
   end
 
   def store_and_confirm_money_code(event)
