@@ -243,6 +243,8 @@ class Call
 
   MONEY_CODES = {'2' => 'More_than_500', '1' => 'Less_than_500'}
 
+  MONEY_DESCRIPTION ={'2' => 'It was about more then 500 Rupees', '1' => 'It was about less then 500 Rupees'}
+
   # secret decoder ring for health facilities
   # site number (key): site, location, phone
   # these sites are in the Azamgar District
@@ -443,12 +445,15 @@ class Call
   end
 
   def store_and_confirm_money_code(event)
+
+    kick_out_after_too_many_retries_for!(:store_and_confirm_money_code)
+
     log("User choose money_code #{@money_code} (#{MONEY_CODES[@money_code]})")
     log("In site #{@site['id']}")
     question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
     event = ask(question, @ask_default_options.merge(:choices => '1,2',
-                                                     :onBadChoice => lambda {|event| store_and_confirm_money_code},
-                                                     :onTimeout => lambda {|event| store_and_confirm_money_code},
+                                                     :onBadChoice => lambda {|event| store_and_confirm_money_code(event)},
+                                                     :onTimeout => lambda {|event| store_and_confirm_money_code(event)},
                                                      :onChoice => lambda { |event| confirm_money_code(event) }))
   end
 
@@ -506,12 +511,16 @@ class Call
 
   def report
     lat, lon = lat_lon
+    description = @incident['data']
+    if money_description = MONEY_DESCRIPTION[@money_code]
+      description << " #{money_description}"
+    end
     {
       :title => @incident['data'],
       :category => '1',
       :latitude => lat,
       :longitude => lon,
-      :description => @incident['data'],
+      :description => description,
       :location_name => @site['data']['name']
 
     }
