@@ -77,6 +77,8 @@ class UshahidiClient
       :longitude => report[:longitude],
       :location_name => report[:location_name]
     }
+    log("payload: #{payload}")
+    payload
   end
 
   def get_date_and_time
