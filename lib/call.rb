@@ -217,7 +217,7 @@ class Call
   DEBUG = true
 
   # ?  !!! MAINTENANCE MODE LEVER !!!
-  MAINTENANCE_MODE = true
+  MAINTENANCE_MODE = false
   MAINTENANCE_PASSWORD = '8'
   MAINTENANCE_MESSAGE = ["The help line is currently undergoing maintenance. Please call again later.", {"voice" => "kate"}]
 
