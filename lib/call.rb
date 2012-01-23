@@ -283,10 +283,10 @@ class Call
     '0029' => {'name'=>'Haliya', 'location'=>'24.491444,82.185563', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'},
     '0030' => {'name'=>'Vijaypur', 'location'=>'25.073399,82.378023', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'},
     '0031' => {'name'=>'Jamalpur', 'location'=>'25.09245,83.052788', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'},
-    '0032' => {'name'=>'Chil', 'location'=>'25.152229,82.563699', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'}
-    '0033' => {'name'=>'Kon', 'location'=>'25.214376,82.583189', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'}
-    '0034' => {'name'=>'Pahadi', 'location'=>'25.050047,82.450017', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'}
-    '0035' => {'name'=>'Nagar (Gurusandi)', 'location'=>'25.160245,82.589738', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'}
+    '0032' => {'name'=>'Chil', 'location'=>'25.152229,82.563699', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'},
+    '0033' => {'name'=>'Kon', 'location'=>'25.214376,82.583189', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'},
+    '0034' => {'name'=>'Pahadi', 'location'=>'25.050047,82.450017', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'},
+    '0035' => {'name'=>'Nagar (Gurusandi)', 'location'=>'25.160245,82.589738', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'},
     '0036' => {'name'=>'Patehra', 'location'=>'24.553075,82.353919', 'phone'=>'+919450162867', 'district' => 'Mirazpur_Zila_District'}
   }
   # end decoder ring
