@@ -231,15 +231,15 @@ class Call
   #SHOULDNT: it be an instance variable in ruby
 
   INCIDENTS = {
-    '1' => 'Health worker asked for bribe to admit you or treat you in hospital.',
-    '2' => 'You were asked to pay money after delivery.',
-    '3' => 'You were asked to pay for drugs, blood, tests, etc.',
-    '4' => 'You were asked to purchase drugs, gloves, soap etc from outside.',
-    '5' => 'The staff asked you to go to another hospital without a referral slip.',
-    '6' => 'You were asked a bribe for payments of JSY.',
-    '7' => 'Had to pay for the vehicle that brought you to hospital.',
-    '8' => 'Were asked to pay for or not provided with food during your stay in the JSSK hospitals.',
-    '9' => 'Were not provided with free drop back facility from JSSK hospitals.',
+    '1' => 'Health worker asked for bribe to admit the patient or treat the patient in hospital.',
+    '2' => 'The patient was asked to pay money after delivery.',
+    '3' => 'The patient was asked to pay for drugs, blood, tests, etc.',
+    '4' => 'The patient was asked to purchase drugs, gloves, soap etc from outside.',
+    '5' => 'The staff asked the patient to go to another hospital without a referral slip.',
+    '6' => 'The patient was asked a bribe for payments of JSY.',
+    '7' => 'The patient had to pay for the vehicle that brought them to hospital.',
+    '8' => 'The patient was asked to pay for or not provided with food during their stay in the JSSK hospitals.',
+    '9' => 'The patient were not provided with free drop back facility from JSSK hospitals.',
     '0' => 'This is a situation which might result in death of the woman/child and no action is being taken by the staff.',
   }
 
