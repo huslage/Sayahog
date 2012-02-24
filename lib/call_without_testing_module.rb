@@ -98,124 +98,8 @@ class UshahidiClient
 end
 
 
-## module is for local testing only
-module LocalTesting
-
-  class CurrentCall
-
-    def callerID
-      "foo"
-    end
-
-    def network
-      "vodafone"
-    end
-
-    def callerName
-      "CallerName"
-    end
-
-    def isActive
-      true
-    end
-
-  end
-
-  #$currentCall = CurrentCall.new
-
-  class Event
-
-    def initialize(value)
-      @value = value
-    end
-
-    def name
-      "choice"
-    end
-
-    def value
-      @value
-    end
-
-  end
-
-  def answer
-    puts "answer"
-  end
-
-  def ask(what, options)
-    puts "asked #{what} - #{options}"
-
-    @ask_count ||= 0
-    @ask_count += 1
-
-    value = case @ask_count
-      when 1 then '8'
-      when 2 then '0023'
-      when 3 then '1'
-      when 4 then '2'
-      else '1'
-    end
-
-    puts "value is #{value}"
-
-    event = Event.new(value)
-
-    if options[:choices]
-      if options[:choices].match("DIGIT")
-        choices = ['0023']
-      else
-        choices = options[:choices].split(',')
-      end
-    end
-
-    if choices
-      if choices.include?(value)
-        options[:onChoice].call(event) if options[:onChoice]
-      else
-        options[:onBadChoice].call(event) if options[:onBadChoice]
-      end
-    end
-    event
-  end
-
-  def say(what, options={})
-    puts "say #{what}"
-  end
-
-  def call(where)
-    puts "calls #{where}"
-  end
-
-  def redirect(where)
-    puts "redirects #{where}"
-  end
-
-  def transfer(where)
-    puts "transfers #{where}"
-  end
-
-  def log(what)
-    puts "logged: #{what}}"
-  end
-
-  def hangup
-    puts "hung up"
-    exit
-  end
-
-  def wait(howlong)
-    "waiting #{howlong}"
-  end
-end
-
-
 ## main class
 class Call
-
-  ## next line is for local testing only
-  #include LocalTesting
-
 
   attr_accessor :caller_info
 
@@ -493,21 +377,6 @@ class Call
       get_incident_code_and_type!
     end
   end
-
-  # def sorry_message(event)
-  #   if DEBUG
-  #     say("sorry! sending you back to the main menu")
-  #     _log("We're in sorry_message, so something has gone horribly wrong!")
-  #     caller_info.each_pair do |k,v|
-  #       log("Key named: #{k} with value: #{v}")
-  #     end
-  #   end
-
-  #   log("IVRS 0.3 - Caller at #{current_info['caller_number']} was unable to use the menu :(")
-  #   say("ok, sending you back to the main menu!")
-  #   wait(300);
-  #   # TODO somethin shoud be called here, it's main in php
-  # end
 
   # checks the dialed-in incident code, if '0' then urgent action is needed!
   def incident_action!

@@ -6,8 +6,6 @@
 
 require 'net/http'
 
-
-## configuration for the Ushahidi Crowdmap
 USHAHIDI_CONFIG = {
   :url => 'ec2-50-112-5-172.us-west-2.compute.amazonaws.com/api',
   :parameters => {
@@ -27,7 +25,7 @@ USHAHIDI_CONFIG = {
 }
 
 
-## class to set up the gateway (Net::HTTP), method (POST) and user credentials for sending data to Ushahidi/Crowdmap
+
 class UshahidiGateway
 
   attr_reader :user, :password
@@ -48,7 +46,6 @@ class UshahidiGateway
 
 end
 
-## class to set up the incident data (payload) for sending it to Crowdmap
 class UshahidiClient
 
   attr_reader :config, :gateway, :url
@@ -80,7 +77,6 @@ class UshahidiClient
       :longitude => report[:longitude],
       :location_name => report[:location_name]
     }
-    # log is a function from the tropo framework, it puts up text in the log file
     log("payload: #{payload}")
     payload
   end
@@ -98,7 +94,7 @@ class UshahidiClient
 end
 
 
-## module is for local testing only
+
 module LocalTesting
 
   class CurrentCall
@@ -121,7 +117,9 @@ module LocalTesting
 
   end
 
-  #$currentCall = CurrentCall.new
+
+  # $currentCall = CurrentCall.new
+
 
   class Event
 
@@ -209,31 +207,29 @@ module LocalTesting
   end
 end
 
-
-## main class
 class Call
 
-  ## next line is for local testing only
-  #include LocalTesting
-
+  # include LocalTesting
 
   attr_accessor :caller_info
 
-  # constant for enabling debugging messages in the tropo log file
+  # debugging messages
   DEBUG = true
 
-  # !!! MAINTENANCE MODE LEVER !!!
-  # if turned on, the hotline only plays the MAINTENANCE_MESSAGE, you have to dial '8' to get through
+  # ?  !!! MAINTENANCE MODE LEVER !!!
   MAINTENANCE_MODE = false
   MAINTENANCE_PASSWORD = '8'
   MAINTENANCE_MESSAGE = ["The help line is currently undergoing maintenance. Please call again later.", {"voice" => "kate"}]
 
-  # URL of the used audio files (hosted at the tropo account)
+  # where all them audio files at?!
   AUDIO_URL = "http://hosting.tropo.com/104666/www/sayahog/audio/"
   AUDIO_TYPE = ".gsm"
 
 
   # incident code -> description
+
+  #SHOULDNT: it be an instance variable in ruby
+
   INCIDENTS = {
     '1' => 'Health worker asked for bribe to admit the patient or treat the patient in hospital.',
     '2' => 'The patient was asked to pay money after delivery.',
@@ -295,7 +291,9 @@ class Call
   }
   # end decoder ring
 
- 
+  ##    $cinfo = array();
+  ####  $icode = NULL;  # WHY?!
+
   def initialize
     @maintainance_authorized = false
     @caller_info = {}
@@ -307,11 +305,8 @@ class Call
     }
   end
 
-
-  ## method for running all the main functions in the designed order
   def run
-    
-    # accept the incomming call
+
     answer()
 
     # hangup if maintenance mode is active but not authorized
@@ -319,10 +314,7 @@ class Call
 
     # store basic caller information (name, number, set retries to 0)
     store_initial_caller_info if $currentCall.isActive
-    # $currentCall is a global variable which is passed through from the tropo application
-    # and contains all information about the current incomming call
 
-    ## plays the "welcome" message
     say(isay("0_1_Welcome_Message")) if $currentCall.isActive
 
     wait(100) if $currentCall.isActive
@@ -342,16 +334,12 @@ class Call
     # report = build_report caller_info
   end
 
-  
-  
   private
 
-  # builds a url to prerecorded messages in the tropo account
   def isay msg
     AUDIO_URL + msg + AUDIO_TYPE
   end
 
-  # if MAINTENANCE_MODE set to true, it plays the MAINTENANCE_MESSAGE and waits for you to dial the secret password ('8')
   def authorize_maintainance_mode
     unless @maintenance_authorized
       say *MAINTENANCE_MESSAGE
@@ -370,18 +358,14 @@ class Call
     end
   end
 
-  
-  # checks, if the dialed site number (e.g. '0012') exists SITES array
-  # if yes: user is ask to verify the number
-  # if not: user is taken back to enter the site number
   def check_store_and_verify_site_or_retry(choice_event)
-    log("Result: #{choice_event.value} (event type: #{choice_event.name})") if DEBUG
+    log("=========================== Result: #{choice_event.value} (event type: #{choice_event.name})")
     if SITES[choice_event.value]
       @site = {'id' => choice_event.value, 'data' => SITES[choice_event.value] }
-      log("Found site #{choice_event.value} (#{@site.inspect})") if DEBUG
+      log("Found site #{choice_event.value} (#{@site.inspect})")
       verify_site
     else
-      log("Didn't find site with number #{choice_event.value}}") if DEBUG
+      log("Didn't find site with number #{choice_event.value}}")
       get_site_info
     end
   end
@@ -400,12 +384,11 @@ class Call
         get_site_info
       end
     else
-      log("received #{event.name} and #{event.value} - retrying") if DEBUG
+      log("received #{event.name} and #{event.value} - retrying")
       get_site_info
     end
   end
 
-  # ask user to dial the site number
   def get_site_info
     log "Currently trying to get site info." if DEBUG
 
@@ -418,7 +401,6 @@ class Call
     check_store_and_verify_site_or_retry(event)
   end
 
-  # ask user for the incident code
   def get_incident_code_and_type!
     kick_out_after_too_many_retries_for!(:get_incident_code_and_type)
 
@@ -428,13 +410,12 @@ class Call
     store_incident_code(event)
   end
 
-  # store the information of the caller
   def store_initial_caller_info
     caller_info['caller_number'] = $currentCall.callerID
     caller_info['retries'] = 0
     caller_info['network'] = $currentCall.network
     caller_info['caller_name'] = $currentCall.callerName if $currentCall.callerName
-    log( "Caller: " + caller_info['caller_number'] ) if DEBUG
+    log( "Caller: " + caller_info['caller_number'] )
   end
 
   # section 1.4 in the specs
@@ -445,7 +426,6 @@ class Call
   end
 
   # section 1.3 in the specs
-  # ask user for amount of money
   def money_demanded
 
     kick_out_after_too_many_retries_for!(:money_demanded)
@@ -457,37 +437,36 @@ class Call
   end
 
 
-  # storing the dialed-in money code and ask for confirmation
+
   def store_and_confirm_money_code(event)
 
-    log("trying to store money code") if DEBUG
+    log("trying to store money code")
 
     @money_code = event.value 
     
     unless MONEY_CODES[@money_code]
-      log("Something went wrong - no valid money code, but still trying to store: #{event}") if DEBUG
+      log("Something went wrong - no valid money code, but still trying to store: #{event}")
       money_demanded
     end
 
-    log("User choose money_code #{@money_code} (#{MONEY_CODES[@money_code]})") if DEBUG
-    log("In site #{@site['id']}") if DEBUG
+    log("User choose money_code #{@money_code} (#{MONEY_CODES[@money_code]})")
+    log("In site #{@site['id']}")
 
     confirm_money_code
   end
 
-  # ask for confirmation of the money code
   def confirm_money_code
 
     kick_out_after_too_many_retries_for!(:confirm_money_code)
 
     question = isay(@site['id']+"_Money_Demanded_"+MONEY_CODES[@money_code])
     event = ask(question, @ask_default_options.merge(:choices => '1,2'))
-    log("User choose #{event.inspect}") if DEBUG
+    log("User choose #{event.inspect}")
     if event.value == "1"
-      log("User confirmed amount of money") if DEBUG
+      log("User confirmed amount of money")
       byenow!
     else
-      log('User did not confirm money code. Redirecting back to choosing incident') if DEBUG
+      log('User did not confirm money code. Redirecting back to choosing incident')
       reset_retry_counts
       # send back to choose incident code
       get_incident_code_and_type!
@@ -509,9 +488,8 @@ class Call
   #   # TODO somethin shoud be called here, it's main in php
   # end
 
-  # checks the dialed-in incident code, if '0' then urgent action is needed!
   def incident_action!
-    log("getting the right action for incident") if DEBUG
+    log("getting the right action for incident")
     case @incident['id']
     when '0'
       urgent_action
@@ -520,23 +498,21 @@ class Call
     end
   end
 
-  # stores the incident code
   def store_incident_code(choice_event)
     @incident ||= {}
     @incident['id'] = choice_event.value
     @incident['data'] = INCIDENTS[choice_event.value]
-    log("Incident is: #{@incident['id']}: #{@incident['data']}") if DEBUG
+    log("Incident is: #{@incident['id']}: #{@incident['data']}")
   end
 
-  # sends the collected data to ushahidi/crowdmap
+  # TODO
   def capture_data!
     client = UshahidiClient.new
-    log("about to post report #{report} using #{client}") if DEBUG
+    log("about to post report #{report} using #{client}")
     res = client.post_report(report)
-    log("got this response from ushahidi: #{res}") if DEBUG
+    log("got this response from ushahidi: #{res}")
   end
 
-  # collects the data in a report
   def report
     lat, lon = lat_lon
     description = @incident['data'].dup
@@ -554,44 +530,37 @@ class Call
     }
   end
 
-  # gives back the lat/lon coordinates of the hospital
   def lat_lon
     @site['data']['location'].split(',')
   end
 
-  # plays end message if all data was sucsessful collected, captures data and hangs up the call
   def byenow!
     say(isay("0_2_End_Message_1_Thank_You"))
     capture_data!
     hangup!
   end
 
-  # hangs up the call
   def hangup!
     hangup
   end
 
-  # plays message when maintenance password is dialed in correctly
   def maintenance_authorized!
     @maintenance_authorized = true
     say "Maintenance mode entered. Warning, Hull breach imminent!"
   end
 
-  # counts the number of retries for every question(action), kicks caller out if more then 2 retries
   def kick_out_after_too_many_retries_for!(action)
     @retries[action] ||= 0
     invalid_choice if @retries[action] > 2
     @retries[action] += 1
-    log("=========================== Count for action '#{action}': #{@retries[action]}") if DEBUG 
+    log("=========================== Count for action '#{action}': #{@retries[action]}")
   end
 
-  # reset the retry counts
   def reset_retry_counts
     @retries.each_pair{|k,v| @retries[k] = 0}
-    log("==== retry counts resetted") if DEBUG
+    log("==== retry counts resetted")
   end
 
-  # hangs up if more then 2 times a wrong choice is dialed
   def invalid_choice
     say(isay("0_3_End_Message_2_Not_entered_a_valid_choice"))
     hangup!
@@ -599,6 +568,4 @@ class Call
 
 end
 
-# starts the script
 Call.new.run
-
