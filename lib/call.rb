@@ -9,7 +9,7 @@ require 'net/http'
 
 ## configuration for the Ushahidi Crowdmap
 USHAHIDI_CONFIG = {
-  :url => 'ec2-50-112-5-172.us-west-2.compute.amazonaws.com/api',
+  :url => 'meraswasthyameriaawaz.org/api',
   :parameters => {
     :required => { },
     :optional => {
