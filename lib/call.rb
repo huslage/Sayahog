@@ -292,10 +292,6 @@ class Call
     '0034' => {'name'=>'Pahadi', 'location'=>'25.050047,82.450017', 'phone'=>'+919450074037', 'district' => 'Mirazpur_Zila_District'},
     '0035' => {'name'=>'Nagar (Gurusandi)', 'location'=>'25.160245,82.589738', 'phone'=>'+919450074037', 'district' => 'Mirazpur_Zila_District'},
     '0036' => {'name'=>'Patehra', 'location'=>'24.553075,82.353919', 'phone'=>'+919450074037', 'district' => 'Mirazpur_Zila_District'}
-    '0037' => {'name'=>'Ahiraura', 'location'=>'25.038327,82.998962', 'phone'=>'+919450074037', 'district' => 'Mirazpur_Zila_District'}
-    '0038' => {'name'=>'Sikhar', 'location'=>'25.074132,82.485834', 'phone'=>'+919450074037', 'district' => 'Mirazpur_Zila_District'}
-    '0039' => {'name'=>'Vindhyachal', 'location'=>'25.095163,82.302222', 'phone'=>'+919450074037', 'district' => 'Mirazpur_Zila_District'}
-    '0040' => {'name'=>'Narayanpur', 'location'=>'25.204941,83.020935', 'phone'=>'+919450074037', 'district' => 'Mirazpur_Zila_District'}
   }
   # end decoder ring
 
