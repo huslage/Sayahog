@@ -3,8 +3,9 @@
 ## proudly presented by adap:to
 ## devolute.org
 
-
 require 'net/http'
+
+ENV['TZ'] = 'IST'
 
 
 ## configuration for the Ushahidi Crowdmap
